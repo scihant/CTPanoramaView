@@ -1,0 +1,308 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		CFA340F21DAD679800599E48 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA340F11DAD679800599E48 /* AppDelegate.swift */; };
+		CFA340F41DAD679800599E48 /* CTPanoramaController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA340F31DAD679800599E48 /* CTPanoramaController.swift */; };
+		CFA340F71DAD679800599E48 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CFA340F51DAD679800599E48 /* Main.storyboard */; };
+		CFA340F91DAD679800599E48 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CFA340F81DAD679800599E48 /* Assets.xcassets */; };
+		CFA340FC1DAD679800599E48 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CFA340FA1DAD679800599E48 /* LaunchScreen.storyboard */; };
+		CFA341041DAD67A400599E48 /* 01.png in Resources */ = {isa = PBXBuildFile; fileRef = CFA341031DAD67A400599E48 /* 01.png */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		CFA340EE1DAD679800599E48 /* CTPanoramaController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CTPanoramaController.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CFA340F11DAD679800599E48 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		CFA340F31DAD679800599E48 /* CTPanoramaController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTPanoramaController.swift; sourceTree = "<group>"; };
+		CFA340F61DAD679800599E48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		CFA340F81DAD679800599E48 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CFA340FB1DAD679800599E48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		CFA340FD1DAD679800599E48 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CFA341031DAD67A400599E48 /* 01.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = 01.png; path = ../../xxxxxx/Panaroma/01.png; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		CFA340EB1DAD679800599E48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		CFA340E51DAD679800599E48 = {
+			isa = PBXGroup;
+			children = (
+				CFA340F01DAD679800599E48 /* CTPanoramaController */,
+				CFA340EF1DAD679800599E48 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CFA340EF1DAD679800599E48 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CFA340EE1DAD679800599E48 /* CTPanoramaController.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CFA340F01DAD679800599E48 /* CTPanoramaController */ = {
+			isa = PBXGroup;
+			children = (
+				CFA340F11DAD679800599E48 /* AppDelegate.swift */,
+				CFA340F31DAD679800599E48 /* CTPanoramaController.swift */,
+				CFA341031DAD67A400599E48 /* 01.png */,
+				CFA340F51DAD679800599E48 /* Main.storyboard */,
+				CFA340F81DAD679800599E48 /* Assets.xcassets */,
+				CFA340FA1DAD679800599E48 /* LaunchScreen.storyboard */,
+				CFA340FD1DAD679800599E48 /* Info.plist */,
+			);
+			path = CTPanoramaController;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CFA340ED1DAD679800599E48 /* CTPanoramaController */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CFA341001DAD679800599E48 /* Build configuration list for PBXNativeTarget "CTPanoramaController" */;
+			buildPhases = (
+				CFA340EA1DAD679800599E48 /* Sources */,
+				CFA340EB1DAD679800599E48 /* Frameworks */,
+				CFA340EC1DAD679800599E48 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CTPanoramaController;
+			productName = CTPanoramaController;
+			productReference = CFA340EE1DAD679800599E48 /* CTPanoramaController.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CFA340E61DAD679800599E48 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0800;
+				LastUpgradeCheck = 0800;
+				ORGANIZATIONNAME = Home;
+				TargetAttributes = {
+					CFA340ED1DAD679800599E48 = {
+						CreatedOnToolsVersion = 8.0;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = CFA340E91DAD679800599E48 /* Build configuration list for PBXProject "CTPanoramaController" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = CFA340E51DAD679800599E48;
+			productRefGroup = CFA340EF1DAD679800599E48 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CFA340ED1DAD679800599E48 /* CTPanoramaController */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CFA340EC1DAD679800599E48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CFA340FC1DAD679800599E48 /* LaunchScreen.storyboard in Resources */,
+				CFA340F91DAD679800599E48 /* Assets.xcassets in Resources */,
+				CFA341041DAD67A400599E48 /* 01.png in Resources */,
+				CFA340F71DAD679800599E48 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CFA340EA1DAD679800599E48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CFA340F41DAD679800599E48 /* CTPanoramaController.swift in Sources */,
+				CFA340F21DAD679800599E48 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		CFA340F51DAD679800599E48 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				CFA340F61DAD679800599E48 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		CFA340FA1DAD679800599E48 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				CFA340FB1DAD679800599E48 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		CFA340FE1DAD679800599E48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		CFA340FF1DAD679800599E48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		CFA341011DAD679800599E48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = CTPanoramaController/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.scihant.CTPanoramaController;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		CFA341021DAD679800599E48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = CTPanoramaController/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.scihant.CTPanoramaController;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CFA340E91DAD679800599E48 /* Build configuration list for PBXProject "CTPanoramaController" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CFA340FE1DAD679800599E48 /* Debug */,
+				CFA340FF1DAD679800599E48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CFA341001DAD679800599E48 /* Build configuration list for PBXNativeTarget "CTPanoramaController" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CFA341011DAD679800599E48 /* Debug */,
+				CFA341021DAD679800599E48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CFA340E61DAD679800599E48 /* Project object */;
+}
