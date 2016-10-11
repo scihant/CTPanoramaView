@@ -12,7 +12,7 @@
 		CFA340F71DAD679800599E48 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CFA340F51DAD679800599E48 /* Main.storyboard */; };
 		CFA340F91DAD679800599E48 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CFA340F81DAD679800599E48 /* Assets.xcassets */; };
 		CFA340FC1DAD679800599E48 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CFA340FA1DAD679800599E48 /* LaunchScreen.storyboard */; };
-		CFA341041DAD67A400599E48 /* 01.png in Resources */ = {isa = PBXBuildFile; fileRef = CFA341031DAD67A400599E48 /* 01.png */; };
+		CFA341061DAD77CE00599E48 /* test.png in Resources */ = {isa = PBXBuildFile; fileRef = CFA341051DAD77CE00599E48 /* test.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,7 +23,7 @@
 		CFA340F81DAD679800599E48 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CFA340FB1DAD679800599E48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CFA340FD1DAD679800599E48 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CFA341031DAD67A400599E48 /* 01.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = 01.png; path = ../../xxxxxx/Panaroma/01.png; sourceTree = "<group>"; };
+		CFA341051DAD77CE00599E48 /* test.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = test.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,7 +58,7 @@
 			children = (
 				CFA340F11DAD679800599E48 /* AppDelegate.swift */,
 				CFA340F31DAD679800599E48 /* CTPanoramaController.swift */,
-				CFA341031DAD67A400599E48 /* 01.png */,
+				CFA341051DAD77CE00599E48 /* test.png */,
 				CFA340F51DAD679800599E48 /* Main.storyboard */,
 				CFA340F81DAD679800599E48 /* Assets.xcassets */,
 				CFA340FA1DAD679800599E48 /* LaunchScreen.storyboard */,
@@ -99,6 +99,7 @@
 				TargetAttributes = {
 					CFA340ED1DAD679800599E48 = {
 						CreatedOnToolsVersion = 8.0;
+						DevelopmentTeam = 38P3Q4228V;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -128,8 +129,8 @@
 			files = (
 				CFA340FC1DAD679800599E48 /* LaunchScreen.storyboard in Resources */,
 				CFA340F91DAD679800599E48 /* Assets.xcassets in Resources */,
-				CFA341041DAD67A400599E48 /* 01.png in Resources */,
 				CFA340F71DAD679800599E48 /* Main.storyboard in Resources */,
+				CFA341061DAD77CE00599E48 /* test.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,6 +263,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 38P3Q4228V;
 				INFOPLIST_FILE = CTPanoramaController/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.scihant.CTPanoramaController;
@@ -274,6 +276,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 38P3Q4228V;
 				INFOPLIST_FILE = CTPanoramaController/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.scihant.CTPanoramaController;
@@ -301,6 +304,7 @@
 				CFA341021DAD679800599E48 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

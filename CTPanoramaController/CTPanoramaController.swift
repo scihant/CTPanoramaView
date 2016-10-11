@@ -8,6 +8,7 @@
 
 import UIKit
 import SceneKit
+import CoreMotion
 
 @objc public enum CTPanaromaControlMethod: Int {
     case Accelerometer
@@ -33,6 +34,7 @@ import SceneKit
     public var controlMethod = CTPanaromaControlMethod.Accelerometer
     private let cameraNode = SCNNode()
     private var prevLocation = CGPoint.zero
+    private var motionManger = CMMotionManager()
     
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -44,7 +46,7 @@ import SceneKit
         cameraNode.camera = camera
         
         let material = SCNMaterial()
-        let texture = UIImage(named: "01.png")
+        let texture = UIImage(named: "test.png")
         material.diffuse.contents = texture
         material.diffuse.mipFilter = .nearest
         material.diffuse.magnificationFilter = .nearest
@@ -75,6 +77,17 @@ import SceneKit
             sceneView.addGestureRecognizer(panGestureRec)
         }
         else {
+            guard motionManger.isAccelerometerAvailable else {return}
+            motionManger.deviceMotionUpdateInterval = 0.01
+            motionManger.startDeviceMotionUpdates(to: OperationQueue.main, withHandler: {[unowned self] (motionData, error) in
+                if let motionData = motionData {
+                    self.cameraNode.orientation = motionData.gaze(atOrientation: UIApplication.shared.statusBarOrientation)
+                }
+                else {
+                    print("\(error?.localizedDescription)")
+                    self.motionManger.stopGyroUpdates()
+                }
+            })
             
         }
     }
@@ -85,7 +98,6 @@ import SceneKit
         }
         else if (panRec.state == .changed) {
             let location = panRec.translation(in: sceneView)
-            print("\(location)")
             let orientation = cameraNode.eulerAngles
             let newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * 0.005,
                                                 orientation.y + Float(location.x - prevLocation.x) * 0.005,
@@ -96,5 +108,58 @@ import SceneKit
         }
     }
     
+    deinit {
+        if (motionManger.isGyroActive) {
+            motionManger.stopGyroUpdates()
+        }
+    }
+    
 }
 
+extension CMDeviceMotion {
+    
+    func gaze(atOrientation orientation: UIInterfaceOrientation) -> SCNVector4 {
+        
+        let attitude = self.attitude.quaternion
+        let aq = GLKQuaternionMake(Float(attitude.x), Float(attitude.y), Float(attitude.z), Float(attitude.w))
+        
+        var final: SCNVector4
+        
+        switch UIApplication.shared.statusBarOrientation {
+            
+        case .landscapeRight:
+            
+            let cq = GLKQuaternionMakeWithAngleAndAxis(Float(M_PI_2), 0, 1, 0)
+            let q = GLKQuaternionMultiply(cq, aq)
+            
+            final = SCNVector4(x: -q.y, y: q.x, z: q.z, w: q.w)
+            
+        case .landscapeLeft:
+            
+            let cq = GLKQuaternionMakeWithAngleAndAxis(Float(-M_PI_2), 0, 1, 0)
+            let q = GLKQuaternionMultiply(cq, aq)
+            
+            final = SCNVector4(x: q.y, y: -q.x, z: q.z, w: q.w)
+            
+        case .portraitUpsideDown:
+            
+            let cq = GLKQuaternionMakeWithAngleAndAxis(Float(M_PI_2), 1, 0, 0)
+            let q = GLKQuaternionMultiply(cq, aq)
+            
+            final = SCNVector4(x: -q.x, y: -q.y, z: q.z, w: q.w)
+            
+        case .unknown:
+            
+            fallthrough
+            
+        case .portrait:
+            
+            let cq = GLKQuaternionMakeWithAngleAndAxis(Float(-M_PI_2), 1, 0, 0)
+            let q = GLKQuaternionMultiply(cq, aq)
+            
+            final = SCNVector4(x: q.x, y: q.y, z: q.z, w: q.w)
+        }
+        
+        return final
+    }
+}
