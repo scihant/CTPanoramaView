@@ -22,23 +22,16 @@ import ImageIO
 }
 
 @objc public class CTPanoramaController: UIViewController {
-
-    override public var shouldAutorotate: Bool {
-        return true
-    }
-    
-    override public var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .all
-    }
-    
-    override public var prefersStatusBarHidden: Bool {
-        return true
-    }
     
     public var image: UIImage?
-    public var controlMethod = CTPanaromaControlMethod.Touch
-    public var panaromaType = CTPanaromaType.Cylindirical
+    public var panaromaType = CTPanaromaType.Spherical
     public var speed = CGPoint(x: 0.005, y: 0.005)
+    
+    public var controlMethod: CTPanaromaControlMethod? {
+        didSet {
+            switchControlMethod(to: controlMethod!)
+        }
+    }
     
     private var sceneView: SCNView!
     private let cameraNode = SCNNode()
@@ -54,20 +47,37 @@ import ImageIO
         return .Cylindirical
     }
     
+    // MARK: Class lifecycle methods
+    
     init(image: UIImage) {
         super.init(nibName: nil, bundle: nil)
         self.image = image
     }
     
     public required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("Cannot be initialized from a storyboard or nib")
+    }
+    
+    deinit {
+        if (motionManger.isDeviceMotionActive) {
+            motionManger.stopDeviceMotionUpdates()
+        }
     }
     
     override public func viewDidLoad() {
         super.viewDidLoad()
+
+        panaromaType = panoramaTypeForCurrentImage
+
         prepareUI()
-        self.panaromaType = panoramaTypeForCurrentImage
-        
+        createScene()
+
+        controlMethod = .Touch
+    }
+    
+    // MARK: Configuration helper methods
+    
+    private func createScene() {
         let camera = SCNCamera()
         camera.zFar = 100
         camera.xFov = 70
@@ -114,13 +124,40 @@ import ImageIO
         
         scene.rootNode.addChildNode(cameraNode)
         scene.rootNode.addChildNode(geometryNode)
-
+        
         sceneView.scene = scene
         sceneView.backgroundColor = UIColor.black
+    }
+    
+    private func prepareUI() {
+        sceneView = SCNView()
+        sceneView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(sceneView)
         
-        if (controlMethod == .Touch) {
+        let button = UIButton(type: .custom)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Touch/Motion", for: .normal)
+        button.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+        
+        view.addSubview(button)
+        
+        let views = ["sceneView" : sceneView, "button": button]
+        
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "|[sceneView]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[sceneView]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+        
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "[button]-10-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-10-[button]", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+    }
+    
+    private func switchControlMethod(to method: CTPanaromaControlMethod) {
+        if (method == .Touch) {
             let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
             sceneView.addGestureRecognizer(panGestureRec)
+            
+            if (motionManger.isDeviceMotionActive) {
+                motionManger.stopDeviceMotionUpdates()
+            }
         }
         else {
             guard motionManger.isDeviceMotionAvailable else {return}
@@ -134,20 +171,20 @@ import ImageIO
                     self.motionManger.stopDeviceMotionUpdates()
                 }
             })
-            
+            sceneView.gestureRecognizers?.removeAll()
         }
+        cameraNode.eulerAngles = SCNVector3Make(0, 0, 0)
     }
     
-    private func prepareUI() {
-        sceneView = SCNView()
-        sceneView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(sceneView)
-        
-        let views = ["sceneView" : sceneView!]
-        
-        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "|[sceneView]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
-        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[sceneView]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
-        view.backgroundColor = UIColor.green
+    // MARK: Event handling methods
+    
+    @objc private func buttonTapped() {
+        if controlMethod == .Touch {
+            controlMethod = .Motion
+        }
+        else {
+            controlMethod = .Touch
+        }
     }
     
     @objc private func handlePan(panRec: UIPanGestureRecognizer) {
@@ -169,14 +206,8 @@ import ImageIO
             prevLocation = location
         }
     }
-    
-    deinit {
-        if (motionManger.isDeviceMotionActive) {
-            motionManger.stopDeviceMotionUpdates()
-        }
-    }
-    
 }
+
 
 extension CMDeviceMotion {
     
