@@ -9,6 +9,7 @@
 import UIKit
 import SceneKit
 import CoreMotion
+import ImageIO
 
 @objc public enum CTPanaromaControlMethod: Int {
     case Motion
@@ -22,8 +23,6 @@ import CoreMotion
 
 @objc public class CTPanoramaController: UIViewController {
 
-    @IBOutlet weak var sceneView: SCNView!
-    
     override public var shouldAutorotate: Bool {
         return true
     }
@@ -36,16 +35,39 @@ import CoreMotion
         return true
     }
     
+    public var image: UIImage?
     public var controlMethod = CTPanaromaControlMethod.Touch
     public var panaromaType = CTPanaromaType.Cylindirical
     public var speed = CGPoint(x: 0.005, y: 0.005)
+    
+    private var sceneView: SCNView!
     private let cameraNode = SCNNode()
     private var prevLocation = CGPoint.zero
     private var motionManger = CMMotionManager()
     
+    private var panoramaTypeForCurrentImage: CTPanaromaType {
+        if let image = image {
+            if (image.size.width / image.size.height == 2) {
+                return .Spherical
+            }
+        }
+        return .Cylindirical
+    }
+    
+    init(image: UIImage) {
+        super.init(nibName: nil, bundle: nil)
+        self.image = image
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override public func viewDidLoad() {
         super.viewDidLoad()
-  
+        prepareUI()
+        self.panaromaType = panoramaTypeForCurrentImage
+        
         let camera = SCNCamera()
         camera.zFar = 100
         camera.xFov = 70
@@ -53,8 +75,7 @@ import CoreMotion
         cameraNode.camera = camera
         
         let material = SCNMaterial()
-        let texture = UIImage(named: "normal.jpg")
-        material.diffuse.contents = texture
+        material.diffuse.contents = image!
         material.diffuse.mipFilter = .nearest
         material.diffuse.magnificationFilter = .nearest
         material.diffuse.contentsTransform = SCNMatrix4MakeScale(-1, 1, 1)
@@ -115,6 +136,18 @@ import CoreMotion
             })
             
         }
+    }
+    
+    private func prepareUI() {
+        sceneView = SCNView()
+        sceneView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(sceneView)
+        
+        let views = ["sceneView" : sceneView!]
+        
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "|[sceneView]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[sceneView]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+        view.backgroundColor = UIColor.green
     }
     
     @objc private func handlePan(panRec: UIPanGestureRecognizer) {

@@ -8,8 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		CF65D4001DADFD1100E89B64 /* normal.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CF65D3FF1DADFD1100E89B64 /* normal.jpg */; };
+		CF65D4021DAE0F9200E89B64 /* ofis.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CF65D4011DAE0F9200E89B64 /* ofis.jpg */; };
+		CF65D4041DAE1DF800E89B64 /* test2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = CF65D4031DAE1DF800E89B64 /* test2.jpg */; };
+		CF65D4061DAE247000E89B64 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF65D4051DAE247000E89B64 /* ViewController.swift */; };
 		CFA340F21DAD679800599E48 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA340F11DAD679800599E48 /* AppDelegate.swift */; };
-		CFA340F41DAD679800599E48 /* CTPanoramaController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA340F31DAD679800599E48 /* CTPanoramaController.swift */; };
+		CFA340F41DAD679800599E48 /* CTPanoramaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA340F31DAD679800599E48 /* CTPanoramaViewController.swift */; };
 		CFA340F71DAD679800599E48 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CFA340F51DAD679800599E48 /* Main.storyboard */; };
 		CFA340F91DAD679800599E48 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CFA340F81DAD679800599E48 /* Assets.xcassets */; };
 		CFA340FC1DAD679800599E48 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CFA340FA1DAD679800599E48 /* LaunchScreen.storyboard */; };
@@ -18,9 +21,12 @@
 
 /* Begin PBXFileReference section */
 		CF65D3FF1DADFD1100E89B64 /* normal.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = normal.jpg; sourceTree = "<group>"; };
+		CF65D4011DAE0F9200E89B64 /* ofis.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ofis.jpg; sourceTree = "<group>"; };
+		CF65D4031DAE1DF800E89B64 /* test2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = test2.jpg; sourceTree = "<group>"; };
+		CF65D4051DAE247000E89B64 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		CFA340EE1DAD679800599E48 /* CTPanoramaController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CTPanoramaController.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CFA340F11DAD679800599E48 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		CFA340F31DAD679800599E48 /* CTPanoramaController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTPanoramaController.swift; sourceTree = "<group>"; };
+		CFA340F31DAD679800599E48 /* CTPanoramaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTPanoramaViewController.swift; sourceTree = "<group>"; };
 		CFA340F61DAD679800599E48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		CFA340F81DAD679800599E48 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CFA340FB1DAD679800599E48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -59,9 +65,12 @@
 			isa = PBXGroup;
 			children = (
 				CFA340F11DAD679800599E48 /* AppDelegate.swift */,
-				CFA340F31DAD679800599E48 /* CTPanoramaController.swift */,
+				CF65D4051DAE247000E89B64 /* ViewController.swift */,
+				CFA340F31DAD679800599E48 /* CTPanoramaViewController.swift */,
+				CF65D4031DAE1DF800E89B64 /* test2.jpg */,
 				CFA341051DAD77CE00599E48 /* spherical.png */,
 				CF65D3FF1DADFD1100E89B64 /* normal.jpg */,
+				CF65D4011DAE0F9200E89B64 /* ofis.jpg */,
 				CFA340F51DAD679800599E48 /* Main.storyboard */,
 				CFA340F81DAD679800599E48 /* Assets.xcassets */,
 				CFA340FA1DAD679800599E48 /* LaunchScreen.storyboard */,
@@ -132,8 +141,10 @@
 			files = (
 				CFA340FC1DAD679800599E48 /* LaunchScreen.storyboard in Resources */,
 				CF65D4001DADFD1100E89B64 /* normal.jpg in Resources */,
+				CF65D4041DAE1DF800E89B64 /* test2.jpg in Resources */,
 				CFA340F91DAD679800599E48 /* Assets.xcassets in Resources */,
 				CFA340F71DAD679800599E48 /* Main.storyboard in Resources */,
+				CF65D4021DAE0F9200E89B64 /* ofis.jpg in Resources */,
 				CFA341061DAD77CE00599E48 /* spherical.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -145,7 +156,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CFA340F41DAD679800599E48 /* CTPanoramaController.swift in Sources */,
+				CF65D4061DAE247000E89B64 /* ViewController.swift in Sources */,
+				CFA340F41DAD679800599E48 /* CTPanoramaViewController.swift in Sources */,
 				CFA340F21DAD679800599E48 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
