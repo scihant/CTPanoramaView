@@ -23,18 +23,32 @@ import ImageIO
 
 @objc public class CTPanoramaController: UIViewController {
     
-    public var image: UIImage?
-    public var panaromaType = CTPanaromaType.Spherical
-    public var speed = CGPoint(x: 0.005, y: 0.005)
+    public var panaromaType: CTPanaromaType?
+    public var panSpeed = CGPoint(x: 0.005, y: 0.005)
+    
+    public var image: UIImage? {
+        didSet {
+            geometryNode.geometry?.firstMaterial?.diffuse.contents = image
+            resetCameraAngles()
+        }
+    }
+    
+    public var overlayView: UIView? {
+        didSet {
+            replace(overlayView: oldValue, with: overlayView)
+        }
+    }
     
     public var controlMethod: CTPanaromaControlMethod? {
         didSet {
             switchControlMethod(to: controlMethod!)
+            resetCameraAngles()
         }
     }
     
-    private var sceneView: SCNView!
     private let cameraNode = SCNNode()
+    private let sceneView = SCNView()
+    private var geometryNode: SCNNode!
     private var prevLocation = CGPoint.zero
     private var motionManger = CMMotionManager()
     
@@ -49,7 +63,7 @@ import ImageIO
     
     // MARK: Class lifecycle methods
     
-    init(image: UIImage) {
+    public init(image: UIImage) {
         super.init(nibName: nil, bundle: nil)
         self.image = image
     }
@@ -67,17 +81,23 @@ import ImageIO
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        panaromaType = panoramaTypeForCurrentImage
-
+        if panaromaType == nil {
+            panaromaType = panoramaTypeForCurrentImage
+        }
+        
         prepareUI()
         createScene()
-
-        controlMethod = .Touch
-    }
+        
+        if controlMethod == nil {
+            controlMethod = .Touch
+        }
+     }
     
     // MARK: Configuration helper methods
     
     private func createScene() {
+        guard let image = image else {return}
+        
         let camera = SCNCamera()
         camera.zFar = 100
         camera.xFov = 70
@@ -85,20 +105,18 @@ import ImageIO
         cameraNode.camera = camera
         
         let material = SCNMaterial()
-        material.diffuse.contents = image!
+        material.diffuse.contents = image
         material.diffuse.mipFilter = .nearest
         material.diffuse.magnificationFilter = .nearest
         material.diffuse.contentsTransform = SCNMatrix4MakeScale(-1, 1, 1)
         material.diffuse.wrapS = .repeat
         material.cullMode = .front
-        
-        var geometryNode: SCNNode
-        
+
         if (panaromaType == .Spherical) {
             let sphere = SCNSphere(radius: 50)
             sphere.segmentCount = 300
             sphere.firstMaterial = material
-            
+
             let sphereNode = SCNNode()
             sphereNode.geometry = sphere
             sphereNode.position = SCNVector3Make(0, 0, 0)
@@ -115,7 +133,7 @@ import ImageIO
             tubeNode.position = SCNVector3Make(0, 0, 0)
             geometryNode = tubeNode
             
-            speed.y = 0 // Don't allow vertical movement in a cylindrical panorama
+            panSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
         }
         
         cameraNode.position = geometryNode.position
@@ -130,7 +148,6 @@ import ImageIO
     }
     
     private func prepareUI() {
-        sceneView = SCNView()
         sceneView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(sceneView)
         
@@ -150,11 +167,19 @@ import ImageIO
         view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-10-[button]", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
     }
     
+    private func replace(overlayView: UIView?, with newOverlayView: UIView?) {
+        overlayView?.removeFromSuperview()
+        guard let newOverlayView = newOverlayView else {return}
+        view.addSubview(newOverlayView)
+    }
+    
     private func switchControlMethod(to method: CTPanaromaControlMethod) {
+        sceneView.gestureRecognizers?.removeAll()
+        
         if (method == .Touch) {
-            let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
-            sceneView.addGestureRecognizer(panGestureRec)
-            
+                let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
+                sceneView.addGestureRecognizer(panGestureRec)
+ 
             if (motionManger.isDeviceMotionActive) {
                 motionManger.stopDeviceMotionUpdates()
             }
@@ -171,8 +196,11 @@ import ImageIO
                     self.motionManger.stopDeviceMotionUpdates()
                 }
             })
-            sceneView.gestureRecognizers?.removeAll()
+            
         }
+    }
+    
+    private func resetCameraAngles() {
         cameraNode.eulerAngles = SCNVector3Make(0, 0, 0)
     }
     
@@ -194,8 +222,8 @@ import ImageIO
         else if (panRec.state == .changed) {
             let location = panRec.translation(in: sceneView)
             let orientation = cameraNode.eulerAngles
-            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(speed.y),
-                                                orientation.y + Float(location.x - prevLocation.x) * Float(speed.x),
+            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(panSpeed.y),
+                                                orientation.y + Float(location.x - prevLocation.x) * Float(panSpeed.x),
                                                 orientation.z)
             
             if (controlMethod == .Touch) {
@@ -208,10 +236,9 @@ import ImageIO
     }
 }
 
-
-extension CMDeviceMotion {
+fileprivate extension CMDeviceMotion {
     
-    func look(at orientation: UIInterfaceOrientation) -> SCNVector4 {
+        func look(at orientation: UIInterfaceOrientation) -> SCNVector4 {
         
         let attitude = self.attitude.quaternion
         let aq = GLKQuaternionMake(Float(attitude.x), Float(attitude.y), Float(attitude.z), Float(attitude.w))
