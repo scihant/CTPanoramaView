@@ -11,8 +11,13 @@ import SceneKit
 import CoreMotion
 
 @objc public enum CTPanaromaControlMethod: Int {
-    case Accelerometer
+    case Motion
     case Touch
+}
+
+@objc public enum CTPanaromaType: Int {
+    case Cylindirical
+    case Spherical
 }
 
 @objc public class CTPanoramaController: UIViewController {
@@ -31,7 +36,9 @@ import CoreMotion
         return true
     }
     
-    public var controlMethod = CTPanaromaControlMethod.Accelerometer
+    public var controlMethod = CTPanaromaControlMethod.Touch
+    public var panaromaType = CTPanaromaType.Cylindirical
+    public var speed = CGPoint(x: 0.005, y: 0.005)
     private let cameraNode = SCNNode()
     private var prevLocation = CGPoint.zero
     private var motionManger = CMMotionManager()
@@ -46,28 +53,46 @@ import CoreMotion
         cameraNode.camera = camera
         
         let material = SCNMaterial()
-        let texture = UIImage(named: "test.png")
+        let texture = UIImage(named: "normal.jpg")
         material.diffuse.contents = texture
         material.diffuse.mipFilter = .nearest
         material.diffuse.magnificationFilter = .nearest
         material.diffuse.contentsTransform = SCNMatrix4MakeScale(-1, 1, 1)
         material.diffuse.wrapS = .repeat
         material.cullMode = .front
-
-        let sphere = SCNSphere(radius: 50)
-        sphere.segmentCount = 300
-        sphere.firstMaterial = material
         
-        let sphereNode = SCNNode()
-        sphereNode.geometry = sphere
+        var geometryNode: SCNNode
         
-        sphereNode.position = SCNVector3Make(0, 0, 0)
-        cameraNode.position = sphereNode.position
+        if (panaromaType == .Spherical) {
+            let sphere = SCNSphere(radius: 50)
+            sphere.segmentCount = 300
+            sphere.firstMaterial = material
+            
+            let sphereNode = SCNNode()
+            sphereNode.geometry = sphere
+            sphereNode.position = SCNVector3Make(0, 0, 0)
+            geometryNode = sphereNode
+        }
+        else {
+            let tube = SCNTube(innerRadius: 40, outerRadius: 40, height: 100)
+            tube.heightSegmentCount = 50
+            tube.radialSegmentCount = 300
+            tube.firstMaterial = material
+            
+            let tubeNode = SCNNode()
+            tubeNode.geometry = tube
+            tubeNode.position = SCNVector3Make(0, 0, 0)
+            geometryNode = tubeNode
+            
+            speed.y = 0 // Don't allow vertical movement in a cylindrical panorama
+        }
+        
+        cameraNode.position = geometryNode.position
         
         let scene = SCNScene()
         
         scene.rootNode.addChildNode(cameraNode)
-        scene.rootNode.addChildNode(sphereNode)
+        scene.rootNode.addChildNode(geometryNode)
 
         sceneView.scene = scene
         sceneView.backgroundColor = UIColor.black
@@ -77,15 +102,15 @@ import CoreMotion
             sceneView.addGestureRecognizer(panGestureRec)
         }
         else {
-            guard motionManger.isAccelerometerAvailable else {return}
-            motionManger.deviceMotionUpdateInterval = 0.01
+            guard motionManger.isDeviceMotionAvailable else {return}
+            motionManger.deviceMotionUpdateInterval = 0.015
             motionManger.startDeviceMotionUpdates(to: OperationQueue.main, withHandler: {[unowned self] (motionData, error) in
                 if let motionData = motionData {
-                    self.cameraNode.orientation = motionData.gaze(atOrientation: UIApplication.shared.statusBarOrientation)
+                    self.cameraNode.orientation = motionData.look(at: UIApplication.shared.statusBarOrientation)
                 }
                 else {
                     print("\(error?.localizedDescription)")
-                    self.motionManger.stopGyroUpdates()
+                    self.motionManger.stopDeviceMotionUpdates()
                 }
             })
             
@@ -99,18 +124,22 @@ import CoreMotion
         else if (panRec.state == .changed) {
             let location = panRec.translation(in: sceneView)
             let orientation = cameraNode.eulerAngles
-            let newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * 0.005,
-                                                orientation.y + Float(location.x - prevLocation.x) * 0.005,
+            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(speed.y),
+                                                orientation.y + Float(location.x - prevLocation.x) * Float(speed.x),
                                                 orientation.z)
             
+            if (controlMethod == .Touch) {
+                newOrientation.x = max(min(newOrientation.x, 1.01),-1.01)
+            }
+
             cameraNode.eulerAngles = newOrientation
             prevLocation = location
         }
     }
     
     deinit {
-        if (motionManger.isGyroActive) {
-            motionManger.stopGyroUpdates()
+        if (motionManger.isDeviceMotionActive) {
+            motionManger.stopDeviceMotionUpdates()
         }
     }
     
@@ -118,48 +147,41 @@ import CoreMotion
 
 extension CMDeviceMotion {
     
-    func gaze(atOrientation orientation: UIInterfaceOrientation) -> SCNVector4 {
+    func look(at orientation: UIInterfaceOrientation) -> SCNVector4 {
         
         let attitude = self.attitude.quaternion
         let aq = GLKQuaternionMake(Float(attitude.x), Float(attitude.y), Float(attitude.z), Float(attitude.w))
         
-        var final: SCNVector4
+        var result: SCNVector4
         
         switch UIApplication.shared.statusBarOrientation {
             
         case .landscapeRight:
-            
             let cq = GLKQuaternionMakeWithAngleAndAxis(Float(M_PI_2), 0, 1, 0)
             let q = GLKQuaternionMultiply(cq, aq)
             
-            final = SCNVector4(x: -q.y, y: q.x, z: q.z, w: q.w)
+            result = SCNVector4(x: -q.y, y: q.x, z: q.z, w: q.w)
             
         case .landscapeLeft:
-            
             let cq = GLKQuaternionMakeWithAngleAndAxis(Float(-M_PI_2), 0, 1, 0)
             let q = GLKQuaternionMultiply(cq, aq)
             
-            final = SCNVector4(x: q.y, y: -q.x, z: q.z, w: q.w)
+            result = SCNVector4(x: q.y, y: -q.x, z: q.z, w: q.w)
             
         case .portraitUpsideDown:
-            
             let cq = GLKQuaternionMakeWithAngleAndAxis(Float(M_PI_2), 1, 0, 0)
             let q = GLKQuaternionMultiply(cq, aq)
             
-            final = SCNVector4(x: -q.x, y: -q.y, z: q.z, w: q.w)
+            result = SCNVector4(x: -q.x, y: -q.y, z: q.z, w: q.w)
             
         case .unknown:
-            
             fallthrough
-            
         case .portrait:
-            
             let cq = GLKQuaternionMakeWithAngleAndAxis(Float(-M_PI_2), 1, 0, 0)
             let q = GLKQuaternionMultiply(cq, aq)
             
-            final = SCNVector4(x: q.x, y: q.y, z: q.z, w: q.w)
+            result = SCNVector4(x: q.x, y: q.y, z: q.z, w: q.w)
         }
-        
-        return final
+        return result
     }
 }
