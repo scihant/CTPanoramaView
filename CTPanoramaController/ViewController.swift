@@ -13,7 +13,7 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        let image = UIImage(named: "spherical.png")
+        let image = UIImage(named: "normal.jpg")
         
         let p = CTPanoramaController(image: image!)
         

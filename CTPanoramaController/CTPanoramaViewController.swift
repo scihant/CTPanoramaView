@@ -17,7 +17,7 @@ import ImageIO
 }
 
 @objc public enum CTPanaromaType: Int {
-    case Cylindirical
+    case Cylindrical
     case Spherical
 }
 
@@ -28,7 +28,7 @@ import ImageIO
     
     public var image: UIImage? {
         didSet {
-            geometryNode.geometry?.firstMaterial?.diffuse.contents = image
+            geometryNode?.geometry?.firstMaterial?.diffuse.contents = image
             resetCameraAngles()
         }
     }
@@ -48,9 +48,10 @@ import ImageIO
     
     private let cameraNode = SCNNode()
     private let sceneView = SCNView()
-    private var geometryNode: SCNNode!
+    private var geometryNode: SCNNode?
     private var prevLocation = CGPoint.zero
     private var motionManger = CMMotionManager()
+    private var prevBounds = CGRect.zero
     
     private var panoramaTypeForCurrentImage: CTPanaromaType {
         if let image = image {
@@ -58,7 +59,7 @@ import ImageIO
                 return .Spherical
             }
         }
-        return .Cylindirical
+        return .Cylindrical
     }
     
     // MARK: Class lifecycle methods
@@ -136,6 +137,7 @@ import ImageIO
             panSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
         }
         
+        guard let geometryNode = geometryNode else {return}
         cameraNode.position = geometryNode.position
         
         let scene = SCNScene()
@@ -190,6 +192,11 @@ import ImageIO
             motionManger.startDeviceMotionUpdates(to: OperationQueue.main, withHandler: {[unowned self] (motionData, error) in
                 if let motionData = motionData {
                     self.cameraNode.orientation = motionData.look(at: UIApplication.shared.statusBarOrientation)
+                   /*
+                    if (self.panaromaType == .Cylindrical) {
+                        self.cameraNode.eulerAngles.x = 0
+                        self.cameraNode.eulerAngles.z = 0
+                    }*/
                 }
                 else {
                     print("\(error?.localizedDescription)")
@@ -202,6 +209,26 @@ import ImageIO
     
     private func resetCameraAngles() {
         cameraNode.eulerAngles = SCNVector3Make(0, 0, 0)
+    }
+    
+    private func updateGeometrySize() {
+        guard let geometryNode = geometryNode else {return}
+        guard panaromaType == .Cylindrical else {return}
+            
+            let hitResult = sceneView.hitTest(CGPoint(x: view.bounds.size.width/2, y: view.bounds.size.height/2), options: nil)
+            guard hitResult.count > 0  else {return}
+            
+            let hitCoordsInScreenSpace = sceneView.projectPoint(hitResult[0].worldCoordinates)
+
+            let tube = geometryNode.geometry as! SCNTube
+   
+            let top = SCNVector3Make(0, 0, hitCoordsInScreenSpace.z)
+            let bottom = SCNVector3Make(0, Float(view.bounds.size.height), hitCoordsInScreenSpace.z)
+            
+            let unprojectedTop = sceneView.unprojectPoint(top)
+            let unprojectedBottom = sceneView.unprojectPoint(bottom)
+            
+            tube.height = CGFloat(unprojectedTop.y - unprojectedBottom.y)
     }
     
     // MARK: Event handling methods
@@ -233,6 +260,14 @@ import ImageIO
             cameraNode.eulerAngles = newOrientation
             prevLocation = location
         }
+    }
+    
+    public override func viewDidLayoutSubviews() {
+        if (view.bounds.size.width != prevBounds.size.width || view.bounds.size.height != prevBounds.size.height) {
+            updateGeometrySize()
+            prevBounds = view.bounds
+        }
+        
     }
 }
 
