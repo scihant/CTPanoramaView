@@ -18,18 +18,46 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YM3-Hu-R4S">
-                                <frame key="frameInset" minX="164" minY="109" width="46" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
+                            <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4vR-OZ-owG">
+                                <connections>
+                                    <segue destination="Bsz-FD-2Kg" kind="embed" identifier="segue" id="Hvk-vF-oqa"/>
+                                </connections>
+                            </containerView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NdB-jE-HZg">
+                                <state key="normal" title="Touch/Motion"/>
+                                <connections>
+                                    <action selector="buttonTapped" destination="BYZ-38-t0r" eventType="touchUpInside" id="BBK-Vm-XNf"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="NdB-jE-HZg" secondAttribute="trailing" id="3St-3t-V7Y"/>
+                            <constraint firstItem="4vR-OZ-owG" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="Ll4-so-6NL"/>
+                            <constraint firstAttribute="trailing" secondItem="4vR-OZ-owG" secondAttribute="trailing" id="NQ9-ka-GoV"/>
+                            <constraint firstItem="NdB-jE-HZg" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="OrN-Pp-ovw"/>
+                            <constraint firstItem="4vR-OZ-owG" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="bGc-lT-kX1"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="4vR-OZ-owG" secondAttribute="bottom" id="yaD-Y0-XXs"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-294" y="1"/>
+        </scene>
+        <!--Panorama Controller-->
+        <scene sceneID="e9N-Uz-rFE">
+            <objects>
+                <viewController id="Bsz-FD-2Kg" customClass="CTPanoramaController" customModule="CTPanoramaController" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="93F-s2-Iow">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="647"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="vDa-1t-Mhk" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="489" y="0.0"/>
         </scene>
     </scenes>
 </document>

@@ -28,7 +28,8 @@ import ImageIO
     
     public var image: UIImage? {
         didSet {
-            geometryNode?.geometry?.firstMaterial?.diffuse.contents = image
+            panaromaType = panoramaTypeForCurrentImage
+            createGeometryNode()
             resetCameraAngles()
         }
     }
@@ -46,8 +47,9 @@ import ImageIO
         }
     }
     
-    private let cameraNode = SCNNode()
     private let sceneView = SCNView()
+    private let scene = SCNScene()
+    private let cameraNode = SCNNode()
     private var geometryNode: SCNNode?
     private var prevLocation = CGPoint.zero
     private var motionManger = CMMotionManager()
@@ -70,7 +72,7 @@ import ImageIO
     }
     
     public required init?(coder aDecoder: NSCoder) {
-        fatalError("Cannot be initialized from a storyboard or nib")
+        super.init(coder: aDecoder)
     }
     
     deinit {
@@ -82,12 +84,18 @@ import ImageIO
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        if panaromaType == nil {
-            panaromaType = panoramaTypeForCurrentImage
+        if geometryNode == nil {
+            createGeometryNode()
         }
+    
+        view.add(view: sceneView)
         
-        prepareUI()
-        createScene()
+        createCamera()
+    
+        scene.rootNode.addChildNode(cameraNode)
+        
+        sceneView.scene = scene
+        sceneView.backgroundColor = UIColor.black
         
         if controlMethod == nil {
             controlMethod = .Touch
@@ -96,14 +104,20 @@ import ImageIO
     
     // MARK: Configuration helper methods
     
-    private func createScene() {
-        guard let image = image else {return}
-        
+    private func createCamera() {
         let camera = SCNCamera()
         camera.zFar = 100
         camera.xFov = 70
         camera.yFov = 70
         cameraNode.camera = camera
+    }
+    
+    private func createGeometryNode() {
+        guard let image = image else {return}
+        
+        panaromaType = panoramaTypeForCurrentImage
+        
+        geometryNode?.removeFromParentNode()
         
         let material = SCNMaterial()
         material.diffuse.contents = image
@@ -112,12 +126,12 @@ import ImageIO
         material.diffuse.contentsTransform = SCNMatrix4MakeScale(-1, 1, 1)
         material.diffuse.wrapS = .repeat
         material.cullMode = .front
-
+        
         if (panaromaType == .Spherical) {
             let sphere = SCNSphere(radius: 50)
             sphere.segmentCount = 300
             sphere.firstMaterial = material
-
+            
             let sphereNode = SCNNode()
             sphereNode.geometry = sphere
             sphereNode.position = SCNVector3Make(0, 0, 0)
@@ -133,46 +147,16 @@ import ImageIO
             tubeNode.geometry = tube
             tubeNode.position = SCNVector3Make(0, 0, 0)
             geometryNode = tubeNode
-            
-            panSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
         }
-        
-        guard let geometryNode = geometryNode else {return}
-        cameraNode.position = geometryNode.position
-        
-        let scene = SCNScene()
-        
-        scene.rootNode.addChildNode(cameraNode)
-        scene.rootNode.addChildNode(geometryNode)
-        
-        sceneView.scene = scene
-        sceneView.backgroundColor = UIColor.black
-    }
-    
-    private func prepareUI() {
-        sceneView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(sceneView)
-        
-        let button = UIButton(type: .custom)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Touch/Motion", for: .normal)
-        button.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
-        
-        view.addSubview(button)
-        
-        let views = ["sceneView" : sceneView, "button": button]
-        
-        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "|[sceneView]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
-        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[sceneView]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
-        
-        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "[button]-10-|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
-        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-10-[button]", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+        cameraNode.position = geometryNode!.position
+        scene.rootNode.addChildNode(geometryNode!)
     }
     
     private func replace(overlayView: UIView?, with newOverlayView: UIView?) {
         overlayView?.removeFromSuperview()
         guard let newOverlayView = newOverlayView else {return}
-        view.addSubview(newOverlayView)
+        view.add(view: newOverlayView)
+        newOverlayView.isUserInteractionEnabled = false
     }
     
     private func switchControlMethod(to method: CTPanaromaControlMethod) {
@@ -192,18 +176,17 @@ import ImageIO
             motionManger.startDeviceMotionUpdates(to: OperationQueue.main, withHandler: {[unowned self] (motionData, error) in
                 if let motionData = motionData {
                     self.cameraNode.orientation = motionData.look(at: UIApplication.shared.statusBarOrientation)
-                   /*
+
                     if (self.panaromaType == .Cylindrical) {
                         self.cameraNode.eulerAngles.x = 0
                         self.cameraNode.eulerAngles.z = 0
-                    }*/
+                    }
                 }
                 else {
                     print("\(error?.localizedDescription)")
                     self.motionManger.stopDeviceMotionUpdates()
                 }
             })
-            
         }
     }
     
@@ -231,26 +214,22 @@ import ImageIO
             tube.height = CGFloat(unprojectedTop.y - unprojectedBottom.y)
     }
     
-    // MARK: Event handling methods
-    
-    @objc private func buttonTapped() {
-        if controlMethod == .Touch {
-            controlMethod = .Motion
-        }
-        else {
-            controlMethod = .Touch
-        }
-    }
+    // MARK: Gesture handling
     
     @objc private func handlePan(panRec: UIPanGestureRecognizer) {
         if (panRec.state == .began) {
             prevLocation = CGPoint.zero
         }
         else if (panRec.state == .changed) {
+            var modifiedPanSpeed = panSpeed
+            if (panaromaType == .Cylindrical) {
+                modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
+            }
+            
             let location = panRec.translation(in: sceneView)
             let orientation = cameraNode.eulerAngles
-            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(panSpeed.y),
-                                                orientation.y + Float(location.x - prevLocation.x) * Float(panSpeed.x),
+            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(modifiedPanSpeed.y),
+                                                orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x),
                                                 orientation.z)
             
             if (controlMethod == .Touch) {
@@ -267,7 +246,6 @@ import ImageIO
             updateGeometrySize()
             prevBounds = view.bounds
         }
-        
     }
 }
 
@@ -309,5 +287,15 @@ fileprivate extension CMDeviceMotion {
             result = SCNVector4(x: q.x, y: q.y, z: q.z, w: q.w)
         }
         return result
+    }
+}
+
+fileprivate extension UIView {
+    func add(view: UIView) {
+        view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(view)
+        let views = ["view": view]
+        addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+        addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
     }
 }
