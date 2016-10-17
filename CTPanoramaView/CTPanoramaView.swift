@@ -1,6 +1,6 @@
 //
-//  CTPanoramaController
-//  CTPanoramaController
+//  CTPanoramaView
+//  CTPanoramaView
 //
 //  Created by Cihan Tek on 11/10/16.
 //  Copyright © 2016 Home. All rights reserved.
@@ -10,6 +10,10 @@ import UIKit
 import SceneKit
 import CoreMotion
 import ImageIO
+
+@objc public protocol CTPanoramaRadar {
+    func updateUI(rotationAngle: CGFloat, fieldOfViewAngle: CGFloat)
+}
 
 @objc public enum CTPanaromaControlMethod: Int {
     case Motion
@@ -21,16 +25,15 @@ import ImageIO
     case Spherical
 }
 
-@objc public class CTPanoramaController: UIViewController {
+@objc public class CTPanoramaView: UIView {
     
-    public var panaromaType: CTPanaromaType?
+    // MARK: Public properties
+    
     public var panSpeed = CGPoint(x: 0.005, y: 0.005)
     
     public var image: UIImage? {
         didSet {
             panaromaType = panoramaTypeForCurrentImage
-            createGeometryNode()
-            resetCameraAngles()
         }
     }
     
@@ -40,24 +43,52 @@ import ImageIO
         }
     }
     
-    public var controlMethod: CTPanaromaControlMethod? {
+    public var panaromaType: CTPanaromaType = .Cylindrical {
+        didSet {
+            createGeometryNode()
+            resetCameraAngles()
+        }
+    }
+    
+    public var controlMethod: CTPanaromaControlMethod! {
         didSet {
             switchControlMethod(to: controlMethod!)
             resetCameraAngles()
         }
     }
     
+    public var radar: CTPanoramaRadar?
+    public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> ())?
+    
+    // MARK: Private properties
+    
+    private let radius: CGFloat = 10
     private let sceneView = SCNView()
     private let scene = SCNScene()
-    private let cameraNode = SCNNode()
+    private let motionManager = CMMotionManager()
     private var geometryNode: SCNNode?
     private var prevLocation = CGPoint.zero
-    private var motionManger = CMMotionManager()
     private var prevBounds = CGRect.zero
+    
+    private lazy var cameraNode: SCNNode = {
+        let node = SCNNode()
+        let camera = SCNCamera()
+        camera.yFov = 70
+        node.camera = camera
+        return node
+    }()
+    
+    private lazy var fovHeight: CGFloat = {
+        return CGFloat(tan(self.cameraNode.camera!.yFov/2 * Double.pi / 180.0)) * 2 * self.radius
+    }()
+    
+    private var xFov: CGFloat {
+        return CGFloat(self.cameraNode.camera!.yFov) * self.bounds.width / self.bounds.height
+    }
     
     private var panoramaTypeForCurrentImage: CTPanaromaType {
         if let image = image {
-            if (image.size.width / image.size.height == 2) {
+            if image.size.width / image.size.height == 2 {
                 return .Spherical
             }
         }
@@ -66,31 +97,23 @@ import ImageIO
     
     // MARK: Class lifecycle methods
     
-    public init(image: UIImage) {
-        super.init(nibName: nil, bundle: nil)
-        self.image = image
-    }
-    
     public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+        commonInit()
     }
     
-    deinit {
-        if (motionManger.isDeviceMotionActive) {
-            motionManger.stopDeviceMotionUpdates()
-        }
+    public override init(frame: CGRect) {
+        super.init(frame: frame)
+        commonInit()
     }
     
-    override public func viewDidLoad() {
-        super.viewDidLoad()
-
-        if geometryNode == nil {
-            createGeometryNode()
-        }
+    public convenience init(frame: CGRect, image: UIImage) {
+        self.init(frame: frame)
+        ({self.image = image})() // Force Swift to call the property observer by calling the setter from a non-init context
+    }
     
-        view.add(view: sceneView)
-        
-        createCamera()
+     private func commonInit() {
+        add(view: sceneView)
     
         scene.rootNode.addChildNode(cameraNode)
         
@@ -103,19 +126,9 @@ import ImageIO
      }
     
     // MARK: Configuration helper methods
-    
-    private func createCamera() {
-        let camera = SCNCamera()
-        camera.zFar = 100
-        camera.xFov = 70
-        camera.yFov = 70
-        cameraNode.camera = camera
-    }
-    
+
     private func createGeometryNode() {
         guard let image = image else {return}
-        
-        panaromaType = panoramaTypeForCurrentImage
         
         geometryNode?.removeFromParentNode()
         
@@ -127,102 +140,108 @@ import ImageIO
         material.diffuse.wrapS = .repeat
         material.cullMode = .front
         
-        if (panaromaType == .Spherical) {
-            let sphere = SCNSphere(radius: 50)
+        if panaromaType == .Spherical {
+            let sphere = SCNSphere(radius: radius)
             sphere.segmentCount = 300
             sphere.firstMaterial = material
             
             let sphereNode = SCNNode()
             sphereNode.geometry = sphere
-            sphereNode.position = SCNVector3Make(0, 0, 0)
             geometryNode = sphereNode
         }
         else {
-            let tube = SCNTube(innerRadius: 40, outerRadius: 40, height: 100)
+            let tube = SCNTube(innerRadius: radius, outerRadius: radius, height: fovHeight)
             tube.heightSegmentCount = 50
             tube.radialSegmentCount = 300
             tube.firstMaterial = material
             
             let tubeNode = SCNNode()
             tubeNode.geometry = tube
-            tubeNode.position = SCNVector3Make(0, 0, 0)
             geometryNode = tubeNode
         }
-        cameraNode.position = geometryNode!.position
         scene.rootNode.addChildNode(geometryNode!)
     }
     
     private func replace(overlayView: UIView?, with newOverlayView: UIView?) {
         overlayView?.removeFromSuperview()
         guard let newOverlayView = newOverlayView else {return}
-        view.add(view: newOverlayView)
-        newOverlayView.isUserInteractionEnabled = false
+        add(view: newOverlayView)
     }
     
     private func switchControlMethod(to method: CTPanaromaControlMethod) {
         sceneView.gestureRecognizers?.removeAll()
-        
-        if (method == .Touch) {
+
+        if method == .Touch {
                 let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
                 sceneView.addGestureRecognizer(panGestureRec)
  
-            if (motionManger.isDeviceMotionActive) {
-                motionManger.stopDeviceMotionUpdates()
+            if motionManager.isDeviceMotionActive {
+                motionManager.stopDeviceMotionUpdates()
             }
         }
         else {
-            guard motionManger.isDeviceMotionAvailable else {return}
-            motionManger.deviceMotionUpdateInterval = 0.015
-            motionManger.startDeviceMotionUpdates(to: OperationQueue.main, withHandler: {[unowned self] (motionData, error) in
-                if let motionData = motionData {
-                    self.cameraNode.orientation = motionData.look(at: UIApplication.shared.statusBarOrientation)
+            guard motionManager.isDeviceMotionAvailable else {return}
+            motionManager.deviceMotionUpdateInterval = 0.015
+            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: OperationQueue.main, withHandler: {[unowned self] (motionData, error) in
+                guard self.controlMethod == .Motion else {return}
+                guard let motionData = motionData else {
+                    print("\(error?.localizedDescription)")
+                    self.motionManager.stopDeviceMotionUpdates()
+                    return
+                }
+                
+                let rm = motionData.attitude.rotationMatrix
+                var userHeading = .pi - atan2(rm.m32, rm.m31)
+                
+                /*
+                // 0 Landscape Left, 90 Portrait 180 Landscape Right 270 Inverse Portrait
+                var userRoll = fabs(atan2(motionData.gravity.y, -motionData.gravity.x))
+                
+                if motionData.gravity.y > 0 {
+                    userRoll = 2 * .pi - userRoll
+                }
+ 
+                let x = motionData.gravity.z
 
-                    if (self.panaromaType == .Cylindrical) {
-                        self.cameraNode.eulerAngles.x = 0
-                        self.cameraNode.eulerAngles.z = 0
-                    }
+                let y = UIDeviceOrientationIsPortrait(UIDevice.current.orientation) ? -motionData.gravity.y : -motionData.gravity.x
+                let userTilt = fabs(atan2(y, x)) //- .pi/2
+                // 0 face down, 90 vertical 180 face up
+                */
+                
+                userHeading += .pi / 2
+                
+                if self.panaromaType == .Cylindrical {
+                    self.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0) // Prevent vertical movement in a cylindrical panorama
                 }
                 else {
-                    print("\(error?.localizedDescription)")
-                    self.motionManger.stopDeviceMotionUpdates()
+                    // Use quaternions when in spherical mode to prevent gimbal lock
+                    self.cameraNode.orientation = motionData.look(at: UIApplication.shared.statusBarOrientation)
                 }
+                self.reportMovement(CGFloat(userHeading), self.xFov.toRadians())
             })
         }
     }
     
     private func resetCameraAngles() {
         cameraNode.eulerAngles = SCNVector3Make(0, 0, 0)
+        self.reportMovement(0, xFov.toRadians())
     }
     
-    private func updateGeometrySize() {
-        guard let geometryNode = geometryNode else {return}
-        guard panaromaType == .Cylindrical else {return}
-            
-            let hitResult = sceneView.hitTest(CGPoint(x: view.bounds.size.width/2, y: view.bounds.size.height/2), options: nil)
-            guard hitResult.count > 0  else {return}
-            
-            let hitCoordsInScreenSpace = sceneView.projectPoint(hitResult[0].worldCoordinates)
-
-            let tube = geometryNode.geometry as! SCNTube
-   
-            let top = SCNVector3Make(0, 0, hitCoordsInScreenSpace.z)
-            let bottom = SCNVector3Make(0, Float(view.bounds.size.height), hitCoordsInScreenSpace.z)
-            
-            let unprojectedTop = sceneView.unprojectPoint(top)
-            let unprojectedBottom = sceneView.unprojectPoint(bottom)
-            
-            tube.height = CGFloat(unprojectedTop.y - unprojectedBottom.y)
+    private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) {
+        radar?.updateUI(rotationAngle: rotationAngle, fieldOfViewAngle: fieldOfViewAngle)
+        movementHandler?(rotationAngle, fieldOfViewAngle)
     }
     
     // MARK: Gesture handling
     
     @objc private func handlePan(panRec: UIPanGestureRecognizer) {
-        if (panRec.state == .began) {
+        if panRec.state == .began {
             prevLocation = CGPoint.zero
         }
-        else if (panRec.state == .changed) {
+        else if panRec.state == .changed {
             var modifiedPanSpeed = panSpeed
-            if (panaromaType == .Cylindrical) {
+            
+            if panaromaType == .Cylindrical {
                 modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
             }
             
@@ -232,20 +251,24 @@ import ImageIO
                                                 orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x),
                                                 orientation.z)
             
-            if (controlMethod == .Touch) {
-                newOrientation.x = max(min(newOrientation.x, 1.01),-1.01)
+            if controlMethod == .Touch {
+                newOrientation.x = max(min(newOrientation.x, 1.1),-1.1)
             }
 
             cameraNode.eulerAngles = newOrientation
             prevLocation = location
+            
+            reportMovement(CGFloat(-cameraNode.eulerAngles.y), xFov.toRadians())
         }
     }
     
-    public override func viewDidLayoutSubviews() {
-        if (view.bounds.size.width != prevBounds.size.width || view.bounds.size.height != prevBounds.size.height) {
-            updateGeometrySize()
-            prevBounds = view.bounds
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        if bounds.size.width != prevBounds.size.width || bounds.size.height != prevBounds.size.height {
+            sceneView.setNeedsDisplay()
+            reportMovement(CGFloat(-cameraNode.eulerAngles.y), xFov.toRadians())
         }
+        
     }
 }
 
@@ -297,5 +320,15 @@ fileprivate extension UIView {
         let views = ["view": view]
         addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
         addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+    }
+}
+
+fileprivate extension CGFloat {
+    func toDegrees() -> CGFloat {
+        return self * 180 / .pi
+    }
+    
+    func toRadians() -> CGFloat {
+        return self * .pi / 180
     }
 }

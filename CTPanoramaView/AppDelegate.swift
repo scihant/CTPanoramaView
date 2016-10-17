@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  CTPanoramaController
+//  CTPanoramaView
 //
 //  Created by Cihan Tek on 11/10/16.
 //  Copyright © 2016 Home. All rights reserved.
