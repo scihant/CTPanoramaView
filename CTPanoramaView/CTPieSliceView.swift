@@ -9,7 +9,7 @@
 import UIKit
 
 @IBDesignable @objc public class CTPieSliceView: UIView {
-   
+    
     @IBInspectable var sliceAngle: CGFloat = .pi/2 {
         didSet { setNeedsDisplay() }
     }
@@ -18,7 +18,11 @@ import UIKit
         didSet { setNeedsDisplay() }
     }
     
-    @IBInspectable var outerRingColor: UIColor = .gray {
+    @IBInspectable var outerRingColor: UIColor = .green {
+        didSet { setNeedsDisplay() }
+    }
+    
+    @IBInspectable var bgColor: UIColor = .black {
         didSet { setNeedsDisplay() }
     }
     
@@ -46,6 +50,11 @@ import UIKit
         
         guard let ctx = UIGraphicsGetCurrentContext() else {return}
         
+        // Draw the background
+        ctx.addEllipse(in: bounds)
+        ctx.setFillColor(bgColor.cgColor)
+        ctx.fillPath()
+        
         // Draw the outer ring
         ctx.addEllipse(in: bounds.insetBy(dx: 2, dy: 2))
         ctx.setStrokeColor(outerRingColor.cgColor)
@@ -57,7 +66,7 @@ import UIKit
         let startAngle = -(.pi/2 + sliceAngle/2)
         let endAngle = startAngle + sliceAngle
         let arcStartPoint = CGPoint(x: localCenter.x + radius*cos(startAngle), y: localCenter.y + radius*sin(startAngle))
-
+        
         // Draw the inner slice
         ctx.beginPath()
         ctx.move(to: localCenter)

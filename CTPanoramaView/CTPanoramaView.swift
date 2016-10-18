@@ -224,12 +224,14 @@ import ImageIO
     
     private func resetCameraAngles() {
         cameraNode.eulerAngles = SCNVector3Make(0, 0, 0)
-        self.reportMovement(0, xFov.toRadians())
+        self.reportMovement(0, xFov.toRadians(), callHandler: false)
     }
     
-    private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) {
+    private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat, callHandler: Bool = true) {
         radar?.updateUI(rotationAngle: rotationAngle, fieldOfViewAngle: fieldOfViewAngle)
-        movementHandler?(rotationAngle, fieldOfViewAngle)
+        if callHandler {
+            movementHandler?(rotationAngle, fieldOfViewAngle)
+        }
     }
     
     // MARK: Gesture handling
@@ -266,9 +268,8 @@ import ImageIO
         super.layoutSubviews()
         if bounds.size.width != prevBounds.size.width || bounds.size.height != prevBounds.size.height {
             sceneView.setNeedsDisplay()
-            reportMovement(CGFloat(-cameraNode.eulerAngles.y), xFov.toRadians())
+            reportMovement(CGFloat(-cameraNode.eulerAngles.y), xFov.toRadians(), callHandler: false)
         }
-        
     }
 }
 
