@@ -30,7 +30,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func panoramaTypeTapped() {
-        if pv.panaromaType == .Spherical {
+        if pv.panoramaType == .Spherical {
             pv.image = UIImage(named: "cylindrical.jpg")
         }
         else {

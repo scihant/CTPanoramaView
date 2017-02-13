@@ -11,8 +11,8 @@ import XCTest
 
 class CTPanoramaViewTests: XCTestCase {
     
-     private let sphericalImageName = "spherical.png"
-     private let cylindricalImageName = "cylindrical.jpg"
+     private let sphericalImageName = "spherical"
+     private let cylindricalImageName = "cylindrical"
      
      private var sphericalImage: UIImage!
      private var cylindricalImage: UIImage!
@@ -29,16 +29,16 @@ class CTPanoramaViewTests: XCTestCase {
     
     func testThatPanoramaTypeChangesAccordingToImage() {
         var pv = CTPanoramaView(frame: CGRect.zero, image: sphericalImage)
-        XCTAssert(pv.panaromaType == .Spherical)
+        XCTAssert(pv.panoramaType == .Spherical)
         
         pv = CTPanoramaView(frame: CGRect.zero, image: cylindricalImage)
-        XCTAssert(pv.panaromaType == .Cylindrical)
+        XCTAssert(pv.panoramaType == .Cylindrical)
         
         pv.image = sphericalImage
-        XCTAssert(pv.panaromaType == .Spherical)
+        XCTAssert(pv.panoramaType == .Spherical)
         
         pv.image = cylindricalImage
-        XCTAssert(pv.panaromaType == .Cylindrical)
+        XCTAssert(pv.panoramaType == .Cylindrical)
     }
     
     func testThatSettingOverlayViewAddsTheViewOnTop() {

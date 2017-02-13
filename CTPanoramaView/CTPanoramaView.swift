@@ -15,12 +15,12 @@ import ImageIO
     func updateUI(rotationAngle: CGFloat, fieldOfViewAngle: CGFloat)
 }
 
-@objc public enum CTPanaromaControlMethod: Int {
+@objc public enum CTPanoramaControlMethod: Int {
     case Motion
     case Touch
 }
 
-@objc public enum CTPanaromaType: Int {
+@objc public enum CTpanoramaType: Int {
     case Cylindrical
     case Spherical
 }
@@ -33,7 +33,7 @@ import ImageIO
     
     public var image: UIImage? {
         didSet {
-            panaromaType = panoramaTypeForCurrentImage
+            panoramaType = panoramaTypeForCurrentImage
         }
     }
     
@@ -43,14 +43,14 @@ import ImageIO
         }
     }
     
-    public var panaromaType: CTPanaromaType = .Cylindrical {
+    public var panoramaType: CTpanoramaType = .Cylindrical {
         didSet {
             createGeometryNode()
             resetCameraAngles()
         }
     }
     
-    public var controlMethod: CTPanaromaControlMethod! {
+    public var controlMethod: CTPanoramaControlMethod! {
         didSet {
             switchControlMethod(to: controlMethod!)
             resetCameraAngles()
@@ -79,14 +79,14 @@ import ImageIO
     }()
     
     private lazy var fovHeight: CGFloat = {
-        return CGFloat(tan(self.cameraNode.camera!.yFov/2 * Double.pi / 180.0)) * 2 * self.radius
+        return CGFloat(tan(self.cameraNode.camera!.yFov/2 * .pi / 180.0)) * 2 * self.radius
     }()
     
     private var xFov: CGFloat {
         return CGFloat(self.cameraNode.camera!.yFov) * self.bounds.width / self.bounds.height
     }
     
-    private var panoramaTypeForCurrentImage: CTPanaromaType {
+    private var panoramaTypeForCurrentImage: CTpanoramaType {
         if let image = image {
             if image.size.width / image.size.height == 2 {
                 return .Spherical
@@ -112,7 +112,13 @@ import ImageIO
         ({self.image = image})() // Force Swift to call the property observer by calling the setter from a non-init context
     }
     
-     private func commonInit() {
+    deinit {
+        if motionManager.isDeviceMotionActive {
+            motionManager.stopDeviceMotionUpdates()
+        }
+    }
+    
+    private func commonInit() {
         add(view: sceneView)
     
         scene.rootNode.addChildNode(cameraNode)
@@ -140,7 +146,7 @@ import ImageIO
         material.diffuse.wrapS = .repeat
         material.cullMode = .front
         
-        if panaromaType == .Spherical {
+        if panoramaType == .Spherical {
             let sphere = SCNSphere(radius: radius)
             sphere.segmentCount = 300
             sphere.firstMaterial = material
@@ -168,7 +174,7 @@ import ImageIO
         add(view: newOverlayView)
     }
     
-    private func switchControlMethod(to method: CTPanaromaControlMethod) {
+    private func switchControlMethod(to method: CTPanoramaControlMethod) {
         sceneView.gestureRecognizers?.removeAll()
 
         if method == .Touch {
@@ -182,42 +188,28 @@ import ImageIO
         else {
             guard motionManager.isDeviceMotionAvailable else {return}
             motionManager.deviceMotionUpdateInterval = 0.015
-            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: OperationQueue.main, withHandler: {[unowned self] (motionData, error) in
-                guard self.controlMethod == .Motion else {return}
+            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: OperationQueue.main, withHandler: {[weak self] (motionData, error) in
+                guard let panoramaView = self else {return}
+                guard panoramaView.controlMethod == .Motion else {return}
+                
                 guard let motionData = motionData else {
                     print("\(error?.localizedDescription)")
-                    self.motionManager.stopDeviceMotionUpdates()
+                    panoramaView.motionManager.stopDeviceMotionUpdates()
                     return
                 }
                 
                 let rm = motionData.attitude.rotationMatrix
                 var userHeading = .pi - atan2(rm.m32, rm.m31)
+                userHeading += .pi/2
                 
-                /*
-                // 0 Landscape Left, 90 Portrait 180 Landscape Right 270 Inverse Portrait
-                var userRoll = fabs(atan2(motionData.gravity.y, -motionData.gravity.x))
-                
-                if motionData.gravity.y > 0 {
-                    userRoll = 2 * .pi - userRoll
-                }
- 
-                let x = motionData.gravity.z
-
-                let y = UIDeviceOrientationIsPortrait(UIDevice.current.orientation) ? -motionData.gravity.y : -motionData.gravity.x
-                let userTilt = fabs(atan2(y, x)) //- .pi/2
-                // 0 face down, 90 vertical 180 face up
-                */
-                
-                userHeading += .pi / 2
-                
-                if self.panaromaType == .Cylindrical {
-                    self.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0) // Prevent vertical movement in a cylindrical panorama
+                if panoramaView.panoramaType == .Cylindrical {
+                    panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0) // Prevent vertical movement in a cylindrical panorama
                 }
                 else {
                     // Use quaternions when in spherical mode to prevent gimbal lock
-                    self.cameraNode.orientation = motionData.look(at: UIApplication.shared.statusBarOrientation)
+                    panoramaView.cameraNode.orientation = motionData.orientation()
                 }
-                self.reportMovement(CGFloat(userHeading), self.xFov.toRadians())
+                panoramaView.reportMovement(CGFloat(userHeading), panoramaView.xFov.toRadians())
             })
         }
     }
@@ -243,7 +235,7 @@ import ImageIO
         else if panRec.state == .changed {
             var modifiedPanSpeed = panSpeed
             
-            if panaromaType == .Cylindrical {
+            if panoramaType == .Cylindrical {
                 modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
             }
             
@@ -275,7 +267,7 @@ import ImageIO
 
 fileprivate extension CMDeviceMotion {
     
-        func look(at orientation: UIInterfaceOrientation) -> SCNVector4 {
+        func orientation() -> SCNVector4 {
         
         let attitude = self.attitude.quaternion
         let aq = GLKQuaternionMake(Float(attitude.x), Float(attitude.y), Float(attitude.z), Float(attitude.w))
@@ -285,27 +277,33 @@ fileprivate extension CMDeviceMotion {
         switch UIApplication.shared.statusBarOrientation {
             
         case .landscapeRight:
-            let cq = GLKQuaternionMakeWithAngleAndAxis(Float(M_PI_2), 0, 1, 0)
-            let q = GLKQuaternionMultiply(cq, aq)
+            let cq1 = GLKQuaternionMakeWithAngleAndAxis(.pi/2, 0, 1, 0)
+            let cq2 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
+            var q = GLKQuaternionMultiply(cq1, aq)
+            q = GLKQuaternionMultiply(cq2, q)
             
             result = SCNVector4(x: -q.y, y: q.x, z: q.z, w: q.w)
             
         case .landscapeLeft:
-            let cq = GLKQuaternionMakeWithAngleAndAxis(Float(-M_PI_2), 0, 1, 0)
-            let q = GLKQuaternionMultiply(cq, aq)
+            let cq1 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 0, 1, 0)
+            let cq2 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
+            var q = GLKQuaternionMultiply(cq1, aq)
+            q = GLKQuaternionMultiply(cq2, q)
             
             result = SCNVector4(x: q.y, y: -q.x, z: q.z, w: q.w)
             
         case .portraitUpsideDown:
-            let cq = GLKQuaternionMakeWithAngleAndAxis(Float(M_PI_2), 1, 0, 0)
-            let q = GLKQuaternionMultiply(cq, aq)
+            let cq1 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
+            let cq2 = GLKQuaternionMakeWithAngleAndAxis(.pi, 0, 0, 1)
+            var q = GLKQuaternionMultiply(cq1, aq)
+            q = GLKQuaternionMultiply(cq2, q)
             
             result = SCNVector4(x: -q.x, y: -q.y, z: q.z, w: q.w)
             
         case .unknown:
             fallthrough
         case .portrait:
-            let cq = GLKQuaternionMakeWithAngleAndAxis(Float(-M_PI_2), 1, 0, 0)
+            let cq = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
             let q = GLKQuaternionMultiply(cq, aq)
             
             result = SCNVector4(x: q.x, y: q.y, z: q.z, w: q.w)
@@ -324,12 +322,12 @@ fileprivate extension UIView {
     }
 }
 
-fileprivate extension CGFloat {
-    func toDegrees() -> CGFloat {
+fileprivate extension FloatingPoint {
+    func toDegrees() -> Self {
         return self * 180 / .pi
     }
     
-    func toRadians() -> CGFloat {
+    func toRadians() -> Self {
         return self * .pi / 180
     }
 }
