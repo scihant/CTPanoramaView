@@ -5,9 +5,9 @@
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![Issues](https://img.shields.io/github/issues/scihant/CTPanoramaView.svg?style=flat)](http://www.github.com/scihant/CTPanoramaView/issues?state=open)
 
-CTPanoramaView is a library that displays complete spherical or cylindrical panoramas with touch or orientation based controls.
+CTPanoramaView is a library that displays complete spherical or cylindrical panoramas with touch or motion based controls.
 
-![Panorama Demo](http://s3.amazonaws.com/tek-files/panorama_demo.gif)
+![panorama_demo](https://cloud.githubusercontent.com/assets/3991481/23154113/ce5aa6b8-f814-11e6-9c97-4d91629733f8.gif)
 
 ## Requirements
 
@@ -15,7 +15,7 @@ CTPanoramaView is a library that displays complete spherical or cylindrical pano
 * Xcode 8.0+
 * Swift 3.0+
 
-CTPanoramaView can also be used both from Objective-C and Swift code.
+CTPanoramaView can be used both from Objective-C and Swift code.
 
 ## Installation
 
@@ -37,7 +37,7 @@ Then run the `pod install` command and use the created workspace to open your pr
 
 #### Manual Install
 
-Just add the file `CTPanoramaView.swift` (and `CTPieSliceView.swift` if you want to use it as the radar view) to your project.
+Just add the file `CTPanoramaView.swift` (and `CTPieSliceView.swift` if you want to use it as the compass view) to your project.
 
 #### Running the Example project
 
@@ -45,17 +45,18 @@ The example project is located in the Example directory. The framework target is
 
 ## Usage
 
-Create an instance of `CTPanoramaView` either in code or using a Storyboard/nib.
+Create an instance of `CTPanoramaView` either in code or using a Storyboard/Nib.
 
 Then load a panoramic image and set it as the image of the CTPanoramaView instance:
 
 ```swift
-	// Create an instance of CTPanoramaView called "panoramaView" somewhere
-    let image = UIImage(named: "panoramicImage.png")
-    panaromaView.image = image
+// Create an instance of CTPanoramaView called "panoramaView" somewhere
+// ...
+let image = UIImage(named: "panoramicImage.png")
+panaromaView.image = image
 ```
 
-![Example](https://s3.amazonaws.com/tek-files/dynamic_rect.gif)
+![panorama_screenshot](https://cloud.githubusercontent.com/assets/3991481/23154919/d5f98476-f818-11e6-8c71-22011a027d96.jpg)
 
 ## Configuration
 
@@ -63,10 +64,10 @@ Then load a panoramic image and set it as the image of the CTPanoramaView instan
 
 CTPanoramaView supports two types of panoramic images:
 
-* Spherical panoramas, which are also called 360 photos. 
-* Cylindrical panoramas.
+* Spherical panoramas (also called 360 photos) 
+* Cylindrical panoramas
 
-All panoramas should be full. Partial panoramas (panoramas with a field of view of less than 360º) are not supported. For a spherical panorama, the image should use [equirectangular projections](https://en.wikipedia.org/wiki/Equirectangular_projection). Cubic format is not supported.
+All panoramas should be full. Partial panoramas (panoramas with a field of view of less than 360º) are not supported. For a spherical panorama, the image should use [equirectangular projection](https://en.wikipedia.org/wiki/Equirectangular_projection). Cubic format is not supported.
 
 CTPanoramaView will automatically determine whether the given image is a spherical or cylindircal panorama by looking at the aspect ratio of the image. If it is 2:1, then it will assume a spherical panorama. If you want to override this default value, change the value of the `panoramaType` property after the image is set.
 
@@ -74,13 +75,13 @@ CTPanoramaView will automatically determine whether the given image is a spheric
 panaromaView.panoramaType = .spherical  // or .cylindrical
 ```
 
-### Control Modes
+### Control Methods
 
 CTPanoramaView allows the user to navigate the panorama two different ways. To change the control method, use the `controlMethod` property.
 
 ```swift
-panaromaView.controlMethod = .Touch  // Touch based control
-panaromaView.controlMethod = .Motion // Accelerometer&gyroscope based control
+panaromaView.controlMethod = .touch  // Touch based control
+panaromaView.controlMethod = .motion // Accelerometer & gyroscope based control
 ```
 
 The default control method is touch based control. You can change the control method on the fly, while the panorama is being displayed on the screen. The visible section will get automatically reset during a control method change.
@@ -89,20 +90,20 @@ The default control method is touch based control. You can change the control me
 
 All orientations are supported. Orientation changes are automatically handled. Therefore you don't have to worry about things getting messed up after an orientation change.
 
-### Radar
+### Compass
 
-If you want to display a radar that shows where the user is currently looking at, use the `radar` property.
-When you set this property to a custom `UIView` subclass conforming to the `CTPanoramaRadar` protocol, the view will automatically supplied with rotation and field of view angles whenever one of them changes.
+If you want to display a compass that shows the users current field of view, use the `compass` property.
+When you set this property to a custom `UIView` subclass conforming to the `CTPanoramaCompass` protocol, the view will automatically supplied with rotation and field of view angles whenever one of them changes.
 
 ```swift
-// radarView is a custom view that conforms to the `CTPanoramaRadar` protocol.
-panaromaView.radar =  radarView 
+// compassView is a custom view that conforms to the `CTPanoramaCompass` protocol.
+panaromaView.compass =  compassView 
 ```
-The protocol contaions only a single method `updateUI(rotationAngle:fieldOfViewAngle:)`. Here, the `rotationAngle` represents the amount of rotation around the vertical axis, and the `fieldOfViewAngle` respresents the horizontal FoV angle of the camera. Both values are in radians.
+The protocol contains only a single method, which is `updateUI(rotationAngle:fieldOfViewAngle:)`. Here, `rotationAngle` is the amount of rotation around the vertical axis, and `fieldOfViewAngle` is the horizontal FoV angle of the camera. Both values are in radians.
 
-You can see an example implementation of a radar in the supplied `CTPieSliceView` class. Add it into your view hierarchy somewhere above the `CTPanoramaView` instance, and then set it as the radar. You'll see that it correctly shows where the user is currently looking at accurately.
+You can see an example implementation of a compass in the supplied `CTPieSliceView` class. Add it into your view hierarchy somewhere above your `CTPanoramaView` instance, and then set it as its compass. You'll see that it correctly shows the current FoV accurately. Here's how `CTPieSliceView` looks in its default configuration:
 
-![CTPieSliceView](https://s3.amazonaws.com/tek-files/dynamic_rect.gif)
+![compassview](https://cloud.githubusercontent.com/assets/3991481/23154086/a83d1542-f814-11e6-9580-40ec925137e9.jpg)
 
 `CTPieSliceView` has several customizable properties such as `sliceColor`, `outerRingColor` and `bgColor`, all of which can also be modified from the interface builder thanks to its live-rendering support.
 

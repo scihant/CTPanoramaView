@@ -1,9 +1,9 @@
 Pod::Spec.new do |s|
   s.name             = "CTPanoramaView"
   s.version          = "1.0"
-  s.summary          = "Displays spherical 360 photos or panoramic images."
+  s.summary          = "Displays spherical or cylindrical panoramas and 360 photos with touch or motion based controls."
   s.homepage         = "https://github.com/scihant/CTPanoramaView"
-  s.screenshots      = "https://s3.amazonaws.com/tek-files/static.png", "https://s3.amazonaws.com/tek-files/dynamic_rect.gif", "https://s3.amazonaws.com/tek-files/dynamic_circle.gif"
+  s.screenshots      = "https://cloud.githubusercontent.com/assets/3991481/23154113/ce5aa6b8-f814-11e6-9c97-4d91629733f8.gif", "https://cloud.githubusercontent.com/assets/3991481/23154919/d5f98476-f818-11e6-8c71-22011a027d96.jpg"
   s.license          = "MIT"
   s.author           = { "scihant" => "cihantek@gmail.com" }
   s.source           = { :git => "https://github.com/scihant/CTPanoramaView.git", :tag => s.version.to_s }
