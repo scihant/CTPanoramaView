@@ -11,18 +11,18 @@ import SceneKit
 import CoreMotion
 import ImageIO
 
-@objc public protocol CTPanoramaRadar {
+@objc public protocol CTPanoramaCompass {
     func updateUI(rotationAngle: CGFloat, fieldOfViewAngle: CGFloat)
 }
 
 @objc public enum CTPanoramaControlMethod: Int {
-    case Motion
-    case Touch
+    case motion
+    case touch
 }
 
-@objc public enum CTpanoramaType: Int {
-    case Cylindrical
-    case Spherical
+@objc public enum CTPanoramaType: Int {
+    case cylindrical
+    case spherical
 }
 
 @objc public class CTPanoramaView: UIView {
@@ -43,7 +43,7 @@ import ImageIO
         }
     }
     
-    public var panoramaType: CTpanoramaType = .Cylindrical {
+    public var panoramaType: CTPanoramaType = .cylindrical {
         didSet {
             createGeometryNode()
             resetCameraAngles()
@@ -57,7 +57,7 @@ import ImageIO
         }
     }
     
-    public var radar: CTPanoramaRadar?
+    public var compass: CTPanoramaCompass?
     public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> ())?
     
     // MARK: Private properties
@@ -86,13 +86,13 @@ import ImageIO
         return CGFloat(self.cameraNode.camera!.yFov) * self.bounds.width / self.bounds.height
     }
     
-    private var panoramaTypeForCurrentImage: CTpanoramaType {
+    private var panoramaTypeForCurrentImage: CTPanoramaType {
         if let image = image {
             if image.size.width / image.size.height == 2 {
-                return .Spherical
+                return .spherical
             }
         }
-        return .Cylindrical
+        return .cylindrical
     }
     
     // MARK: Class lifecycle methods
@@ -127,7 +127,7 @@ import ImageIO
         sceneView.backgroundColor = UIColor.black
         
         if controlMethod == nil {
-            controlMethod = .Touch
+            controlMethod = .touch
         }
      }
     
@@ -146,7 +146,7 @@ import ImageIO
         material.diffuse.wrapS = .repeat
         material.cullMode = .front
         
-        if panoramaType == .Spherical {
+        if panoramaType == .spherical {
             let sphere = SCNSphere(radius: radius)
             sphere.segmentCount = 300
             sphere.firstMaterial = material
@@ -177,7 +177,7 @@ import ImageIO
     private func switchControlMethod(to method: CTPanoramaControlMethod) {
         sceneView.gestureRecognizers?.removeAll()
 
-        if method == .Touch {
+        if method == .touch {
                 let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
                 sceneView.addGestureRecognizer(panGestureRec)
  
@@ -190,7 +190,7 @@ import ImageIO
             motionManager.deviceMotionUpdateInterval = 0.015
             motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: OperationQueue.main, withHandler: {[weak self] (motionData, error) in
                 guard let panoramaView = self else {return}
-                guard panoramaView.controlMethod == .Motion else {return}
+                guard panoramaView.controlMethod == .motion else {return}
                 
                 guard let motionData = motionData else {
                     print("\(error?.localizedDescription)")
@@ -202,7 +202,7 @@ import ImageIO
                 var userHeading = .pi - atan2(rm.m32, rm.m31)
                 userHeading += .pi/2
                 
-                if panoramaView.panoramaType == .Cylindrical {
+                if panoramaView.panoramaType == .cylindrical {
                     panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0) // Prevent vertical movement in a cylindrical panorama
                 }
                 else {
@@ -220,7 +220,7 @@ import ImageIO
     }
     
     private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat, callHandler: Bool = true) {
-        radar?.updateUI(rotationAngle: rotationAngle, fieldOfViewAngle: fieldOfViewAngle)
+        compass?.updateUI(rotationAngle: rotationAngle, fieldOfViewAngle: fieldOfViewAngle)
         if callHandler {
             movementHandler?(rotationAngle, fieldOfViewAngle)
         }
@@ -235,7 +235,7 @@ import ImageIO
         else if panRec.state == .changed {
             var modifiedPanSpeed = panSpeed
             
-            if panoramaType == .Cylindrical {
+            if panoramaType == .cylindrical {
                 modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
             }
             
@@ -245,7 +245,7 @@ import ImageIO
                                                 orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x),
                                                 orientation.z)
             
-            if controlMethod == .Touch {
+            if controlMethod == .touch {
                 newOrientation.x = max(min(newOrientation.x, 1.1),-1.1)
             }
 

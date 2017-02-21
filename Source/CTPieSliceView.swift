@@ -78,7 +78,7 @@ import UIKit
     }
 }
 
-extension CTPieSliceView: CTPanoramaRadar {
+extension CTPieSliceView: CTPanoramaCompass {
     public func updateUI(rotationAngle: CGFloat, fieldOfViewAngle: CGFloat) {
         sliceAngle = fieldOfViewAngle
         transform = CGAffineTransform.identity.rotated(by: rotationAngle)
