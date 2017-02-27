@@ -5,7 +5,7 @@
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![Issues](https://img.shields.io/github/issues/scihant/CTPanoramaView.svg?style=flat)](http://www.github.com/scihant/CTPanoramaView/issues?state=open)
 
-CTPanoramaView is a library that displays complete spherical or cylindrical panoramas with touch or motion based controls.
+CTPanoramaView is a high-performance library that uses SceneKit to display complete spherical or cylindrical panoramas with touch or motion based controls.
 
 ![panorama_demo](https://cloud.githubusercontent.com/assets/3991481/23154113/ce5aa6b8-f814-11e6-9c97-4d91629733f8.gif)
 
@@ -23,7 +23,7 @@ CTPanoramaView can be used both from Objective-C and Swift code.
 
 To install CTPanoramaView using [Carthage](https://github.com/Carthage/Carthage), add the folowing line into your Cartfile:
 
-	github "CTPanoramaView/CTPanoramaView" ~> 1.0
+    github "scihant/CTPanoramaView" ~> 1.0
 
 Then run the `carthage update` command to build the framework and drag the built `CTPanoramaView.framework` into your XCode project.
 
@@ -101,7 +101,7 @@ panaromaView.compass =  compassView
 ```
 The protocol contains only a single method, which is `updateUI(rotationAngle:fieldOfViewAngle:)`. Here, `rotationAngle` is the amount of rotation around the vertical axis, and `fieldOfViewAngle` is the horizontal FoV angle of the camera. Both values are in radians.
 
-You can see an example implementation of a compass in the supplied `CTPieSliceView` class. Add it into your view hierarchy somewhere above your `CTPanoramaView` instance, and then set it as its compass. You'll see that it correctly shows the current FoV accurately. Here's how `CTPieSliceView` looks in its default configuration:
+You can see an example implementation of a compass in the supplied `CTPieSliceView` class. Add it into your view hierarchy somewhere above your `CTPanoramaView` instance, and then set it as its compass. You'll see that it shows the current FoV accurately. Here's how `CTPieSliceView` looks in its default configuration:
 
 ![compassview](https://cloud.githubusercontent.com/assets/3991481/23154086/a83d1542-f814-11e6-9580-40ec925137e9.jpg)
 
