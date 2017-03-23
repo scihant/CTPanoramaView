@@ -11,6 +11,13 @@ import SceneKit
 import CoreMotion
 import ImageIO
 
+/**
+ * Adds two SCNVector3 vectors and returns the result as a new SCNVector3.
+ */
+fileprivate func + (left: SCNVector3, right: SCNVector3) -> SCNVector3 {
+    return SCNVector3Make(left.x + right.x, left.y + right.y, left.z + right.z)
+}
+
 @objc public protocol CTPanoramaCompass {
     func updateUI(rotationAngle: CGFloat, fieldOfViewAngle: CGFloat)
 }
@@ -18,11 +25,27 @@ import ImageIO
 @objc public enum CTPanoramaControlMethod: Int {
     case motion
     case touch
+    case combo // FIXME: Currently combo type is only supported for Cylindrical Panoramas
+
+    public var description : String {
+        switch self {
+        case .motion: return "motion"
+        case .touch: return "touch"
+        case .combo: return "combo"
+        }
+    }
 }
 
 @objc public enum CTPanoramaType: Int {
     case cylindrical
     case spherical
+
+    public var description : String {
+        switch self {
+        case .cylindrical: return "cylindrical"
+        case .spherical: return "spherical"
+        }
+    }
 }
 
 @objc public class CTPanoramaView: UIView {
@@ -69,7 +92,10 @@ import ImageIO
     private var geometryNode: SCNNode?
     private var prevLocation = CGPoint.zero
     private var prevBounds = CGRect.zero
-    
+
+    var panningVector = SCNVector3Make(0,100,0)
+    var headingVector = SCNVector3Make(0,Float(-1.0 * .pi / 2.0),0)
+
     private lazy var cameraNode: SCNNode = {
         let node = SCNNode()
         let camera = SCNCamera()
@@ -177,20 +203,20 @@ import ImageIO
     private func switchControlMethod(to method: CTPanoramaControlMethod) {
         sceneView.gestureRecognizers?.removeAll()
 
-        if method == .touch {
+        if method == .touch || method == .combo {
                 let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
                 sceneView.addGestureRecognizer(panGestureRec)
  
-            if motionManager.isDeviceMotionActive {
+            if motionManager.isDeviceMotionActive && method != .combo {
                 motionManager.stopDeviceMotionUpdates()
             }
         }
-        else {
+        if method == .motion || method == .combo {
             guard motionManager.isDeviceMotionAvailable else {return}
             motionManager.deviceMotionUpdateInterval = 0.015
             motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: OperationQueue.main, withHandler: {[weak self] (motionData, error) in
                 guard let panoramaView = self else {return}
-                guard panoramaView.controlMethod == .motion else {return}
+                guard panoramaView.controlMethod == .motion || panoramaView.controlMethod == .combo else {return}
                 
                 guard let motionData = motionData else {
                     print("\(error?.localizedDescription)")
@@ -201,9 +227,15 @@ import ImageIO
                 let rm = motionData.attitude.rotationMatrix
                 var userHeading = .pi - atan2(rm.m32, rm.m31)
                 userHeading += .pi/2
-                
+
+                panoramaView.headingVector = SCNVector3Make(
+                    0 ,
+                    Float(-userHeading) ,
+                    0)
+
                 if panoramaView.panoramaType == .cylindrical {
-                    panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0) // Prevent vertical movement in a cylindrical panorama
+                    panoramaView.cameraNode.eulerAngles = panoramaView.headingVector
+                        + panoramaView.panningVector
                 }
                 else {
                     // Use quaternions when in spherical mode to prevent gimbal lock
@@ -216,6 +248,9 @@ import ImageIO
     
     private func resetCameraAngles() {
         cameraNode.eulerAngles = SCNVector3Make(0, 0, 0)
+        panningVector = SCNVector3Make(0,100,0)
+        headingVector = SCNVector3Make(0,Float(-1.0 * .pi / 2.0),0)
+
         self.reportMovement(0, xFov.toRadians(), callHandler: false)
     }
     
@@ -229,6 +264,11 @@ import ImageIO
     // MARK: Gesture handling
     
     @objc private func handlePan(panRec: UIPanGestureRecognizer) {
+        if controlMethod == .combo && panoramaType == .spherical {
+            // FIXME combo control method not supported in spherical panoramas at this time
+            return
+        }
+
         if panRec.state == .began {
             prevLocation = CGPoint.zero
         }
@@ -240,11 +280,14 @@ import ImageIO
             }
             
             let location = panRec.translation(in: sceneView)
-            let orientation = cameraNode.eulerAngles
-            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(modifiedPanSpeed.y),
-                                                orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x),
-                                                orientation.z)
-            
+            // let orientation = cameraNode.eulerAngles
+
+            panningVector = panningVector + SCNVector3Make(
+                Float(location.y - prevLocation.y) * Float(modifiedPanSpeed.y),
+                Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x),
+                0)
+
+            var newOrientation = panningVector + headingVector
             if controlMethod == .touch {
                 newOrientation.x = max(min(newOrientation.x, 1.1),-1.1)
             }

@@ -11,14 +11,21 @@ import CTPanoramaView
 
 class ViewController: UIViewController {
 
+    @IBOutlet weak var panoTypeButton: UIButton!
+    @IBOutlet weak var motionTypeButton: UIButton!
     @IBOutlet weak var compassView: CTPieSliceView!
     @IBOutlet weak var pv: CTPanoramaView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        loadSphericalImage()
+        loadCylindricalImage()
         pv.compass = compassView
+        pv.controlMethod = .combo
+        pv.panoramaType = .cylindrical
+
+        panoTypeButton.setTitle(pv.panoramaType.description, for: .normal)
+        motionTypeButton.setTitle(pv.controlMethod.description, for: .normal)
     }
     
     @IBAction func panoramaTypeTapped() {
@@ -28,15 +35,22 @@ class ViewController: UIViewController {
         else {
             loadSphericalImage()
         }
+
+        panoTypeButton.setTitle(pv.panoramaType.description, for: .normal)
     }
     
     @IBAction func motionTypeTapped() {
-        if pv.controlMethod == .touch {
+        if pv.controlMethod == .combo {
+            pv.controlMethod = .touch
+        }
+        else if pv.controlMethod == .touch {
             pv.controlMethod = .motion
         }
         else {
-            pv.controlMethod = .touch
+            pv.controlMethod = .combo
         }
+
+        motionTypeButton.setTitle(pv.controlMethod.description, for: .normal)
     }
     
     func loadSphericalImage() {
