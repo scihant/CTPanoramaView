@@ -241,7 +241,7 @@ fileprivate func + (left: SCNVector3, right: SCNVector3) -> SCNVector3 {
                     // Use quaternions when in spherical mode to prevent gimbal lock
                     panoramaView.cameraNode.orientation = motionData.orientation()
                 }
-                panoramaView.reportMovement(CGFloat(userHeading), panoramaView.xFov.toRadians())
+                panoramaView.reportMovement(CGFloat(-panoramaView.cameraNode.eulerAngles.y), panoramaView.xFov.toRadians())
             })
         }
     }
