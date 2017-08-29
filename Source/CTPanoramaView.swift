@@ -50,9 +50,9 @@ import ImageIO
         }
     }
     
-    public var controlMethod: CTPanoramaControlMethod! {
+    public var controlMethod: CTPanoramaControlMethod = .touch {
         didSet {
-            switchControlMethod(to: controlMethod!)
+            switchControlMethod(to: controlMethod)
             resetCameraAngles()
         }
     }
@@ -126,9 +126,7 @@ import ImageIO
         sceneView.scene = scene
         sceneView.backgroundColor = UIColor.black
         
-        if controlMethod == nil {
-            controlMethod = .touch
-        }
+        switchControlMethod(to: controlMethod)
      }
     
     // MARK: Configuration helper methods
@@ -193,7 +191,7 @@ import ImageIO
                 guard panoramaView.controlMethod == .motion else {return}
                 
                 guard let motionData = motionData else {
-                    print("\(error?.localizedDescription)")
+                    print("\(String(describing: error?.localizedDescription))")
                     panoramaView.motionManager.stopDeviceMotionUpdates()
                     return
                 }
