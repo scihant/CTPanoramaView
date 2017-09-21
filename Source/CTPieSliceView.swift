@@ -8,7 +8,7 @@
 
 import UIKit
 
-@IBDesignable @objc public class CTPieSliceView: UIView {
+@IBDesignable @objcMembers public class CTPieSliceView: UIView {
     
     @IBInspectable var sliceAngle: CGFloat = .pi/2 {
         didSet { setNeedsDisplay() }

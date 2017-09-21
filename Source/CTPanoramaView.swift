@@ -29,36 +29,36 @@ import ImageIO
     
     // MARK: Public properties
     
-    public var panSpeed = CGPoint(x: 0.005, y: 0.005)
+    @objc public var panSpeed = CGPoint(x: 0.005, y: 0.005)
     
-    public var image: UIImage? {
+    @objc public var image: UIImage? {
         didSet {
             panoramaType = panoramaTypeForCurrentImage
         }
     }
     
-    public var overlayView: UIView? {
+    @objc public var overlayView: UIView? {
         didSet {
             replace(overlayView: oldValue, with: overlayView)
         }
     }
     
-    public var panoramaType: CTPanoramaType = .cylindrical {
+    @objc public var panoramaType: CTPanoramaType = .cylindrical {
         didSet {
             createGeometryNode()
             resetCameraAngles()
         }
     }
     
-    public var controlMethod: CTPanoramaControlMethod! {
+    @objc public var controlMethod: CTPanoramaControlMethod = .touch {
         didSet {
-            switchControlMethod(to: controlMethod!)
+            switchControlMethod(to: controlMethod)
             resetCameraAngles()
         }
     }
     
-    public var compass: CTPanoramaCompass?
-    public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> ())?
+    @objc public var compass: CTPanoramaCompass?
+    @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> ())?
     
     // MARK: Private properties
     
@@ -73,17 +73,33 @@ import ImageIO
     private lazy var cameraNode: SCNNode = {
         let node = SCNNode()
         let camera = SCNCamera()
-        camera.yFov = 70
         node.camera = camera
         return node
     }()
     
     private lazy var fovHeight: CGFloat = {
-        return CGFloat(tan(self.cameraNode.camera!.yFov/2 * .pi / 180.0)) * 2 * self.radius
+        return tan(yFov/2 * .pi / 180.0) * 2 * self.radius
     }()
     
     private var xFov: CGFloat {
-        return CGFloat(self.cameraNode.camera!.yFov) * self.bounds.width / self.bounds.height
+        return yFov * self.bounds.width / self.bounds.height
+    }
+    
+    private var yFov : CGFloat {
+        get {
+            if #available(iOS 11.0, *) {
+                return cameraNode.camera!.fieldOfView
+            } else {
+                return CGFloat(cameraNode.camera!.yFov)
+            }
+        }
+        set {
+            if #available(iOS 11.0, *) {
+                cameraNode.camera!.fieldOfView = newValue
+            } else {
+                cameraNode.camera!.yFov = Double(newValue)
+            }
+        }
     }
     
     private var panoramaTypeForCurrentImage: CTPanoramaType {
@@ -122,13 +138,12 @@ import ImageIO
         add(view: sceneView)
     
         scene.rootNode.addChildNode(cameraNode)
+        yFov = 70
         
         sceneView.scene = scene
         sceneView.backgroundColor = UIColor.black
         
-        if controlMethod == nil {
-            controlMethod = .touch
-        }
+        switchControlMethod(to: controlMethod)
      }
     
     // MARK: Configuration helper methods
@@ -193,7 +208,7 @@ import ImageIO
                 guard panoramaView.controlMethod == .motion else {return}
                 
                 guard let motionData = motionData else {
-                    print("\(error?.localizedDescription)")
+                    print("\(String(describing: error?.localizedDescription))")
                     panoramaView.motionManager.stopDeviceMotionUpdates()
                     return
                 }

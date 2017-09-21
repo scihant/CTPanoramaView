@@ -165,7 +165,7 @@
 					CF415AAA1E55C70F002A98ED = {
 						CreatedOnToolsVersion = 8.2.1;
 						DevelopmentTeam = 38P3Q4228V;
-						LastSwiftMigration = 0820;
+						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 					};
 					CF415AB31E55C70F002A98ED = {
@@ -356,7 +356,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -376,7 +377,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.scihant.CTPanoramaView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};

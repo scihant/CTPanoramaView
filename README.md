@@ -12,8 +12,8 @@ CTPanoramaView is a high-performance library that uses SceneKit to display compl
 ## Requirements
 
 * iOS 8.0+ 
-* Xcode 8.0+
-* Swift 3.0+
+* v1.0 requires Xcode 8.0 and Swift 3.0
+* v1.1 requires XCode 9.0 and Swift 4.0
 
 CTPanoramaView can be used both from Objective-C and Swift code.
 
