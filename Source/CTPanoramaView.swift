@@ -78,7 +78,7 @@ import ImageIO
     }()
     
     private lazy var fovHeight: CGFloat = {
-        return tan(yFov/2 * .pi / 180.0) * 2 * self.radius
+        return tan(self.yFov/2 * .pi / 180.0) * 2 * self.radius
     }()
     
     private var xFov: CGFloat {
