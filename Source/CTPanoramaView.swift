@@ -31,6 +31,8 @@ import ImageIO
     
     @objc public var panSpeed = CGPoint(x: 0.005, y: 0.005)
     
+    @objc public var startAngleDegrees : Float = 0
+    
     @objc public var image: UIImage? {
         didSet {
             panoramaType = panoramaTypeForCurrentImage
@@ -230,8 +232,9 @@ import ImageIO
     }
     
     private func resetCameraAngles() {
-        cameraNode.eulerAngles = SCNVector3Make(0, 0, 0)
-        self.reportMovement(0, xFov.toRadians(), callHandler: false)
+        let y = (self.startAngleDegrees * .pi) / 180
+        cameraNode.eulerAngles = SCNVector3Make(0, y, 0)
+        self.reportMovement(CGFloat(y), xFov.toRadians(), callHandler: false)
     }
     
     private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat, callHandler: Bool = true) {
