@@ -29,7 +29,10 @@ import ImageIO
     
     // MARK: Public properties
     
+    @objc public var compass: CTPanoramaCompass?
+    @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> ())?
     @objc public var panSpeed = CGPoint(x: 0.005, y: 0.005)
+    @objc public var startAngle: Float = 0
     
     @objc public var image: UIImage? {
         didSet {
@@ -57,9 +60,7 @@ import ImageIO
         }
     }
     
-    @objc public var compass: CTPanoramaCompass?
-    @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> ())?
-    
+
     // MARK: Private properties
     
     private let radius: CGFloat = 10
@@ -230,8 +231,8 @@ import ImageIO
     }
     
     private func resetCameraAngles() {
-        cameraNode.eulerAngles = SCNVector3Make(0, 0, 0)
-        self.reportMovement(0, xFov.toRadians(), callHandler: false)
+        cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
+        self.reportMovement(CGFloat(startAngle), xFov.toRadians(), callHandler: false)
     }
     
     private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat, callHandler: Bool = true) {

@@ -86,6 +86,8 @@ panaromaView.controlMethod = .motion // Accelerometer & gyroscope based control
 
 The default control method is touch based control. You can change the control method on the fly, while the panorama is being displayed on the screen. The visible section will get automatically reset during a control method change.
 
+When using touch based control, you can set the starting angle of the viewer in radians using the `startAngle` property of CTPanoramaView. This property is ignored in motion based control mode.
+
 ### Orientation Support
 
 All orientations are supported. Orientation changes are automatically handled. Therefore you don't have to worry about things getting messed up after an orientation change.
@@ -111,4 +113,6 @@ You can see an example implementation of a compass in the supplied `CTPieSliceVi
 
 There is also a convenience property named `overlayView` that can be used to add a custom view that covers the entire panorama view on top. When using touch based controls, it's up to you to make sure that the overlay view does not "consume" the touches it receives so that the `CTPanoramaView` instance can receive the touch events properly.
 
+### Contribution
 
+You can create a feature branch from the dev branch and send me a pull request. 
