@@ -77,6 +77,12 @@ import ImageIO
         return node
     }()
     
+    private lazy var opQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.qualityOfService = .userInitiated
+        return queue
+    }()
+    
     private lazy var fovHeight: CGFloat = {
         return tan(self.yFov/2 * .pi / 180.0) * 2 * self.radius
     }()
@@ -203,7 +209,7 @@ import ImageIO
         else {
             guard motionManager.isDeviceMotionAvailable else {return}
             motionManager.deviceMotionUpdateInterval = 0.015
-            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: OperationQueue.main, withHandler: {[weak self] (motionData, error) in
+            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: opQueue, withHandler: {[weak self] (motionData, error) in
                 guard let panoramaView = self else {return}
                 guard panoramaView.controlMethod == .motion else {return}
                 
