@@ -132,7 +132,7 @@ import ImageIO
     public convenience init(frame: CGRect, image: UIImage) {
         self.init(frame: frame)
         // Force Swift to call the property observer by calling the setter from a non-init context
-        ({self.image = image})()
+        ({ self.image = image })()
     }
 
     deinit {
