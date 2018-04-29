@@ -319,9 +319,7 @@ fileprivate extension CMDeviceMotion {
 
             result = SCNVector4(x: -quanternionMultiplier.x, y: -quanternionMultiplier.y, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
 
-        case .unknown:
-            fallthrough
-        case .portrait:
+        case .unknown, .portrait:
             let clockwiseQuanternion = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
             let quanternionMultiplier = GLKQuaternionMultiply(clockwiseQuanternion, attitudeQuanternion)
 
