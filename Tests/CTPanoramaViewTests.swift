@@ -51,7 +51,7 @@ class CTPanoramaViewTests: XCTestCase {
         XCTAssert(overlayView.superview == nil)
         XCTAssert(anotherOverlayView.superview == panoramaView)
 
-        panoramaView.overlayView = nil;
+        panoramaView.overlayView = nil
         XCTAssert(overlayView.superview == nil)
     }
 
