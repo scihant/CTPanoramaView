@@ -94,16 +94,16 @@ import ImageIO
     private var yFov: CGFloat {
         get {
             if #available(iOS 11.0, *) {
-                return cameraNode.camera!.fieldOfView
+                return cameraNode.camera?.fieldOfView ?? 0
             } else {
-                return CGFloat(cameraNode.camera!.yFov)
+                return CGFloat(cameraNode.camera?.yFov ?? 0)
             }
         }
         set {
             if #available(iOS 11.0, *) {
-                cameraNode.camera!.fieldOfView = newValue
+                cameraNode.camera?.fieldOfView = newValue
             } else {
-                cameraNode.camera!.yFov = Double(newValue)
+                cameraNode.camera?.yFov = Double(newValue)
             }
         }
     }
