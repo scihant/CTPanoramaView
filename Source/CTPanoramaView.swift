@@ -91,7 +91,7 @@ import ImageIO
         return yFov * self.bounds.width / self.bounds.height
     }
 
-    private var yFov : CGFloat {
+    private var yFov: CGFloat {
         get {
             if #available(iOS 11.0, *) {
                 return cameraNode.camera!.fieldOfView
