@@ -265,7 +265,7 @@ import ImageIO
                                                 orientation.z)
 
             if controlMethod == .touch {
-                newOrientation.x = max(min(newOrientation.x, 1.1),-1.1)
+                newOrientation.x = max(min(newOrientation.x, 1.1), -1.1)
             }
 
             cameraNode.eulerAngles = newOrientation
