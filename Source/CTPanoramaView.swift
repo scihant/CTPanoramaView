@@ -219,8 +219,8 @@ import ImageIO
                     return
                 }
 
-                let rm = motionData.attitude.rotationMatrix
-                var userHeading = .pi - atan2(rm.m32, rm.m31)
+                let rotationMatrix = motionData.attitude.rotationMatrix
+                var userHeading = .pi - atan2(rotationMatrix.m32, rotationMatrix.m31)
                 userHeading += .pi/2
 
                 DispatchQueue.main.async {
@@ -293,7 +293,7 @@ fileprivate extension CMDeviceMotion {
         func orientation() -> SCNVector4 {
 
         let attitude = self.attitude.quaternion
-        let aq = GLKQuaternionMake(Float(attitude.x), Float(attitude.y), Float(attitude.z), Float(attitude.w))
+        let attitudeQuanternion = GLKQuaternionMake(Float(attitude.x), Float(attitude.y), Float(attitude.z), Float(attitude.w))
 
         var result: SCNVector4
 
@@ -302,7 +302,7 @@ fileprivate extension CMDeviceMotion {
         case .landscapeRight:
             let cq1 = GLKQuaternionMakeWithAngleAndAxis(.pi/2, 0, 1, 0)
             let cq2 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
-            var quanternionMultiplier = GLKQuaternionMultiply(cq1, aq)
+            var quanternionMultiplier = GLKQuaternionMultiply(cq1, attitudeQuanternion)
             quanternionMultiplier = GLKQuaternionMultiply(cq2, quanternionMultiplier)
 
             result = SCNVector4(x: -quanternionMultiplier.y, y: quanternionMultiplier.x, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
@@ -310,7 +310,7 @@ fileprivate extension CMDeviceMotion {
         case .landscapeLeft:
             let cq1 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 0, 1, 0)
             let cq2 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
-            var quanternionMultiplier = GLKQuaternionMultiply(cq1, aq)
+            var quanternionMultiplier = GLKQuaternionMultiply(cq1, attitudeQuanternion)
             quanternionMultiplier = GLKQuaternionMultiply(cq2, quanternionMultiplier)
 
             result = SCNVector4(x: quanternionMultiplier.y, y: -quanternionMultiplier.x, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
@@ -318,7 +318,7 @@ fileprivate extension CMDeviceMotion {
         case .portraitUpsideDown:
             let cq1 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
             let cq2 = GLKQuaternionMakeWithAngleAndAxis(.pi, 0, 0, 1)
-            var quanternionMultiplier = GLKQuaternionMultiply(cq1, aq)
+            var quanternionMultiplier = GLKQuaternionMultiply(cq1, attitudeQuanternion)
             quanternionMultiplier = GLKQuaternionMultiply(cq2, quanternionMultiplier)
 
             result = SCNVector4(x: -quanternionMultiplier.x, y: -quanternionMultiplier.y, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
@@ -326,8 +326,8 @@ fileprivate extension CMDeviceMotion {
         case .unknown:
             fallthrough
         case .portrait:
-            let cq = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
-            let quanternionMultiplier = GLKQuaternionMultiply(cq, aq)
+            let clockwiseQuanternion = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
+            let quanternionMultiplier = GLKQuaternionMultiply(clockwiseQuanternion, attitudeQuanternion)
 
             result = SCNVector4(x: quanternionMultiplier.x, y: quanternionMultiplier.y, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
         }

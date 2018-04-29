@@ -25,33 +25,33 @@ class CTPanoramaViewTests: XCTestCase {
     }
 
     func testThatPanoramaTypeChangesAccordingToImage() {
-        var pv = CTPanoramaView(frame: CGRect.zero, image: sphericalImage)
-        XCTAssert(pv.panoramaType == .spherical)
+        var panoramaView = CTPanoramaView(frame: CGRect.zero, image: sphericalImage)
+        XCTAssert(panoramaView.panoramaType == .spherical)
 
-        pv = CTPanoramaView(frame: CGRect.zero, image: cylindricalImage)
-        XCTAssert(pv.panoramaType == .cylindrical)
+        panoramaView = CTPanoramaView(frame: CGRect.zero, image: cylindricalImage)
+        XCTAssert(panoramaView.panoramaType == .cylindrical)
 
-        pv.image = sphericalImage
-        XCTAssert(pv.panoramaType == .spherical)
+        panoramaView.image = sphericalImage
+        XCTAssert(panoramaView.panoramaType == .spherical)
 
-        pv.image = cylindricalImage
-        XCTAssert(pv.panoramaType == .cylindrical)
+        panoramaView.image = cylindricalImage
+        XCTAssert(panoramaView.panoramaType == .cylindrical)
     }
 
     func testThatSettingOverlayViewAddsTheViewOnTop() {
-        let pv = CTPanoramaView(frame: CGRect.zero, image: sphericalImage)
+        let panoramaView = CTPanoramaView(frame: CGRect.zero, image: sphericalImage)
         let overlayView = UIView()
 
-        pv.overlayView = overlayView
-        XCTAssert(overlayView.superview == pv)
+        panoramaView.overlayView = overlayView
+        XCTAssert(overlayView.superview == panoramaView)
 
         let anotherOverlayView = UIView()
 
-        pv.overlayView = anotherOverlayView
+        panoramaView.overlayView = anotherOverlayView
         XCTAssert(overlayView.superview == nil)
-        XCTAssert(anotherOverlayView.superview == pv)
+        XCTAssert(anotherOverlayView.superview == panoramaView)
 
-        pv.overlayView = nil;
+        panoramaView.overlayView = nil;
         XCTAssert(overlayView.superview == nil)
     }
 
