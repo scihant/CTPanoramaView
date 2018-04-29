@@ -131,7 +131,8 @@ import ImageIO
 
     public convenience init(frame: CGRect, image: UIImage) {
         self.init(frame: frame)
-        ({self.image = image})() // Force Swift to call the property observer by calling the setter from a non-init context
+        // Force Swift to call the property observer by calling the setter from a non-init context
+        ({self.image = image})()
     }
 
     deinit {
@@ -207,7 +208,8 @@ import ImageIO
         } else {
             guard motionManager.isDeviceMotionAvailable else {return}
             motionManager.deviceMotionUpdateInterval = 0.015
-            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: opQueue, withHandler: {[weak self] (motionData, error) in
+            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: opQueue,
+                                                   withHandler: { [weak self] (motionData, error) in
                 guard let panoramaView = self else {return}
                 guard panoramaView.controlMethod == .motion else {return}
 
@@ -223,7 +225,8 @@ import ImageIO
 
                 DispatchQueue.main.async {
                     if panoramaView.panoramaType == .cylindrical {
-                        panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0) // Prevent vertical movement in a cylindrical panorama
+                        // Prevent vertical movement in a cylindrical panorama
+                        panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0)
                     } else {
                         // Use quaternions when in spherical mode to prevent gimbal lock
                         panoramaView.cameraNode.orientation = motionData.orientation()
@@ -260,8 +263,8 @@ import ImageIO
 
             let location = panRec.translation(in: sceneView)
             let orientation = cameraNode.eulerAngles
-            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(modifiedPanSpeed.y),
-                                                orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x),
+            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(modifiedPanSpeed.y), //swiftlint:disable:this line_length
+                                                orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x), //swiftlint:disable:this line_length
                                                 orientation.z)
 
             if controlMethod == .touch {
@@ -289,9 +292,9 @@ fileprivate extension CMDeviceMotion {
         func orientation() -> SCNVector4 {
 
         let attitude = self.attitude.quaternion
-        let attitudeQuanternion = GLKQuaternionMake(Float(attitude.x), Float(attitude.y), Float(attitude.z), Float(attitude.w))
+        let attitudeQuanternion = GLKQuaternion(quanternion: attitude)
 
-        var result: SCNVector4
+        let result: SCNVector4
 
         switch UIApplication.shared.statusBarOrientation {
 
@@ -301,7 +304,7 @@ fileprivate extension CMDeviceMotion {
             var quanternionMultiplier = GLKQuaternionMultiply(cq1, attitudeQuanternion)
             quanternionMultiplier = GLKQuaternionMultiply(cq2, quanternionMultiplier)
 
-            result = SCNVector4(x: -quanternionMultiplier.y, y: quanternionMultiplier.x, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
+            result = quanternionMultiplier.vector(for: .landscapeRight)
 
         case .landscapeLeft:
             let cq1 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 0, 1, 0)
@@ -309,7 +312,7 @@ fileprivate extension CMDeviceMotion {
             var quanternionMultiplier = GLKQuaternionMultiply(cq1, attitudeQuanternion)
             quanternionMultiplier = GLKQuaternionMultiply(cq2, quanternionMultiplier)
 
-            result = SCNVector4(x: quanternionMultiplier.y, y: -quanternionMultiplier.x, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
+            result = quanternionMultiplier.vector(for: .landscapeLeft)
 
         case .portraitUpsideDown:
             let cq1 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
@@ -317,13 +320,13 @@ fileprivate extension CMDeviceMotion {
             var quanternionMultiplier = GLKQuaternionMultiply(cq1, attitudeQuanternion)
             quanternionMultiplier = GLKQuaternionMultiply(cq2, quanternionMultiplier)
 
-            result = SCNVector4(x: -quanternionMultiplier.x, y: -quanternionMultiplier.y, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
+            result = quanternionMultiplier.vector(for: .portraitUpsideDown)
 
         case .unknown, .portrait:
             let clockwiseQuanternion = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
             let quanternionMultiplier = GLKQuaternionMultiply(clockwiseQuanternion, attitudeQuanternion)
 
-            result = SCNVector4(x: quanternionMultiplier.x, y: quanternionMultiplier.y, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
+            result = quanternionMultiplier.vector(for: .portrait)
         }
         return result
     }
@@ -334,8 +337,10 @@ fileprivate extension UIView {
         view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
         let views = ["view": view]
-        addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
-        addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: views))
+        let hConstraints = NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: [], metrics: nil, views: views)    //swiftlint:disable:this line_length
+        let vConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: [], metrics: nil, views: views)  //swiftlint:disable:this line_length
+        self.addConstraints(hConstraints)
+        self.addConstraints(vConstraints)
     }
 }
 
@@ -346,5 +351,27 @@ fileprivate extension FloatingPoint {
 
     func toRadians() -> Self {
         return self * .pi / 180
+    }
+}
+
+private extension GLKQuaternion {
+    init(quanternion: CMQuaternion) {
+        self.init(q: (Float(quanternion.x), Float(quanternion.y), Float(quanternion.z), Float(quanternion.w)))
+    }
+
+    func vector(for orientation: UIInterfaceOrientation) -> SCNVector4 {
+        switch orientation {
+        case .landscapeRight:
+            return SCNVector4(x: -self.y, y: self.x, z: self.z, w: self.w)
+
+        case .landscapeLeft:
+            return SCNVector4(x: self.y, y: -self.x, z: self.z, w: self.w)
+
+        case .portraitUpsideDown:
+            return SCNVector4(x: -self.x, y: -self.y, z: self.z, w: self.w)
+
+        case .unknown, .portrait:
+            return SCNVector4(x: self.x, y: self.y, z: self.z, w: self.w)
+        }
     }
 }

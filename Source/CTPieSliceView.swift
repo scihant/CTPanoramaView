@@ -65,7 +65,8 @@ import UIKit
         let localCenter = CGPoint(x: bounds.size.width/2, y: bounds.size.height/2)
         let startAngle = -(.pi/2 + sliceAngle/2)
         let endAngle = startAngle + sliceAngle
-        let arcStartPoint = CGPoint(x: localCenter.x + radius*cos(startAngle), y: localCenter.y + radius*sin(startAngle))
+        let arcStartPoint = CGPoint(x: localCenter.x + radius * cos(startAngle),
+                                    y: localCenter.y + radius * sin(startAngle))
 
         // Draw the inner slice
         ctx.beginPath()
