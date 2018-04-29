@@ -58,7 +58,7 @@ import ImageIO
     }
 
     @objc public var compass: CTPanoramaCompass?
-    @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> ())?
+    @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> Void)?
 
     // MARK: Private properties
 
