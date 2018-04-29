@@ -289,7 +289,7 @@ import ImageIO
 
 fileprivate extension CMDeviceMotion {
 
-        func orientation() -> SCNVector4 {
+    func orientation() -> SCNVector4 {
 
         let attitude = self.attitude.quaternion
         let attitudeQuanternion = GLKQuaternion(quanternion: attitude)
