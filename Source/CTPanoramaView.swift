@@ -175,8 +175,7 @@ import ImageIO
             let sphereNode = SCNNode()
             sphereNode.geometry = sphere
             geometryNode = sphereNode
-        }
-        else {
+        } else {
             let tube = SCNTube(innerRadius: radius, outerRadius: radius, height: fovHeight)
             tube.heightSegmentCount = 50
             tube.radialSegmentCount = 300
@@ -205,8 +204,7 @@ import ImageIO
             if motionManager.isDeviceMotionActive {
                 motionManager.stopDeviceMotionUpdates()
             }
-        }
-        else {
+        } else {
             guard motionManager.isDeviceMotionAvailable else {return}
             motionManager.deviceMotionUpdateInterval = 0.015
             motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: opQueue, withHandler: {[weak self] (motionData, error) in
@@ -226,8 +224,7 @@ import ImageIO
                 DispatchQueue.main.async {
                     if panoramaView.panoramaType == .cylindrical {
                         panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0) // Prevent vertical movement in a cylindrical panorama
-                    }
-                    else {
+                    } else {
                         // Use quaternions when in spherical mode to prevent gimbal lock
                         panoramaView.cameraNode.orientation = motionData.orientation()
                     }
@@ -254,8 +251,7 @@ import ImageIO
     @objc private func handlePan(panRec: UIPanGestureRecognizer) {
         if panRec.state == .began {
             prevLocation = CGPoint.zero
-        }
-        else if panRec.state == .changed {
+        } else if panRec.state == .changed {
             var modifiedPanSpeed = panSpeed
 
             if panoramaType == .cylindrical {
