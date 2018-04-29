@@ -24,8 +24,7 @@ class ViewController: UIViewController {
     @IBAction func panoramaTypeTapped() {
         if pv.panoramaType == .spherical {
             loadCylindricalImage()
-        }
-        else {
+        } else {
             loadSphericalImage()
         }
     }
@@ -33,8 +32,7 @@ class ViewController: UIViewController {
     @IBAction func motionTypeTapped() {
         if pv.controlMethod == .touch {
             pv.controlMethod = .motion
-        }
-        else {
+        } else {
             pv.controlMethod = .touch
         }
     }
