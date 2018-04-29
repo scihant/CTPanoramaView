@@ -134,6 +134,7 @@
 				CF415ADB1E55E314002A98ED /* Frameworks */,
 				CF415ADC1E55E314002A98ED /* Resources */,
 				CF415B341E5ACA85002A98ED /* Embed Frameworks */,
+				CE460E562095FE40007AA570 /* ShellScript */,
 			);
 			buildRules = (
 			);
