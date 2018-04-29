@@ -222,15 +222,17 @@ import ImageIO
                 let rm = motionData.attitude.rotationMatrix
                 var userHeading = .pi - atan2(rm.m32, rm.m31)
                 userHeading += .pi/2
-                
-                if panoramaView.panoramaType == .cylindrical {
-                    panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0) // Prevent vertical movement in a cylindrical panorama
+
+                DispatchQueue.main.async {
+                    if panoramaView.panoramaType == .cylindrical {
+                        panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0) // Prevent vertical movement in a cylindrical panorama
+                    }
+                    else {
+                        // Use quaternions when in spherical mode to prevent gimbal lock
+                        panoramaView.cameraNode.orientation = motionData.orientation()
+                    }
+                    panoramaView.reportMovement(CGFloat(userHeading), panoramaView.xFov.toRadians())
                 }
-                else {
-                    // Use quaternions when in spherical mode to prevent gimbal lock
-                    panoramaView.cameraNode.orientation = motionData.orientation()
-                }
-                panoramaView.reportMovement(CGFloat(userHeading), panoramaView.xFov.toRadians())
             })
         }
     }
