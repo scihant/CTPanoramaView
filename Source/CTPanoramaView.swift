@@ -302,34 +302,34 @@ fileprivate extension CMDeviceMotion {
         case .landscapeRight:
             let cq1 = GLKQuaternionMakeWithAngleAndAxis(.pi/2, 0, 1, 0)
             let cq2 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
-            var q = GLKQuaternionMultiply(cq1, aq)
-            q = GLKQuaternionMultiply(cq2, q)
+            var quanternionMultiplier = GLKQuaternionMultiply(cq1, aq)
+            quanternionMultiplier = GLKQuaternionMultiply(cq2, quanternionMultiplier)
 
-            result = SCNVector4(x: -q.y, y: q.x, z: q.z, w: q.w)
+            result = SCNVector4(x: -quanternionMultiplier.y, y: quanternionMultiplier.x, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
 
         case .landscapeLeft:
             let cq1 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 0, 1, 0)
             let cq2 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
-            var q = GLKQuaternionMultiply(cq1, aq)
-            q = GLKQuaternionMultiply(cq2, q)
+            var quanternionMultiplier = GLKQuaternionMultiply(cq1, aq)
+            quanternionMultiplier = GLKQuaternionMultiply(cq2, quanternionMultiplier)
 
-            result = SCNVector4(x: q.y, y: -q.x, z: q.z, w: q.w)
+            result = SCNVector4(x: quanternionMultiplier.y, y: -quanternionMultiplier.x, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
 
         case .portraitUpsideDown:
             let cq1 = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
             let cq2 = GLKQuaternionMakeWithAngleAndAxis(.pi, 0, 0, 1)
-            var q = GLKQuaternionMultiply(cq1, aq)
-            q = GLKQuaternionMultiply(cq2, q)
+            var quanternionMultiplier = GLKQuaternionMultiply(cq1, aq)
+            quanternionMultiplier = GLKQuaternionMultiply(cq2, quanternionMultiplier)
 
-            result = SCNVector4(x: -q.x, y: -q.y, z: q.z, w: q.w)
+            result = SCNVector4(x: -quanternionMultiplier.x, y: -quanternionMultiplier.y, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
 
         case .unknown:
             fallthrough
         case .portrait:
             let cq = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
-            let q = GLKQuaternionMultiply(cq, aq)
+            let quanternionMultiplier = GLKQuaternionMultiply(cq, aq)
 
-            result = SCNVector4(x: q.x, y: q.y, z: q.z, w: q.w)
+            result = SCNVector4(x: quanternionMultiplier.x, y: quanternionMultiplier.y, z: quanternionMultiplier.z, w: quanternionMultiplier.w)
         }
         return result
     }
