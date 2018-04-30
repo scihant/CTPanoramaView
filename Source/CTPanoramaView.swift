@@ -79,7 +79,7 @@ import ImageIO
     
     private lazy var opQueue: OperationQueue = {
         let queue = OperationQueue()
-        queue.qualityOfService = .userInitiated
+        queue.qualityOfService = .userInteractive
         return queue
     }()
     
