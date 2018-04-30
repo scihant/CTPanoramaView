@@ -111,4 +111,7 @@ You can see an example implementation of a compass in the supplied `CTPieSliceVi
 
 There is also a convenience property named `overlayView` that can be used to add a custom view that covers the entire panorama view on top. When using touch based controls, it's up to you to make sure that the overlay view does not "consume" the touches it receives so that the `CTPanoramaView` instance can receive the touch events properly.
 
+### How to Contribute
+
+Create a feature branch off the dev branch and then send me a pull request. I don't merge PR's directly to master so please don't make your changes there.
 
