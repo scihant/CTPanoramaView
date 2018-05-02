@@ -263,8 +263,8 @@ import ImageIO
 
             let location = panRec.translation(in: sceneView)
             let orientation = cameraNode.eulerAngles
-            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(modifiedPanSpeed.y), //swiftlint:disable:this line_length
-                                                orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x), //swiftlint:disable:this line_length
+            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(modifiedPanSpeed.y),
+                                                orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x),
                                                 orientation.z)
 
             if controlMethod == .touch {
