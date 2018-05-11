@@ -87,6 +87,8 @@ import ImageIO
         return tan(self.yFov/2 * .pi / 180.0) * 2 * self.radius
     }()
 
+    private var startScale = 0.0
+    
     private var xFov: CGFloat {
         return yFov * self.bounds.width / self.bounds.height
     }
@@ -145,7 +147,7 @@ import ImageIO
         add(view: sceneView)
 
         scene.rootNode.addChildNode(cameraNode)
-        yFov = 70
+        yFov = 80
 
         sceneView.scene = scene
         sceneView.backgroundColor = UIColor.black
@@ -199,9 +201,12 @@ import ImageIO
         sceneView.gestureRecognizers?.removeAll()
 
         if method == .touch {
-                let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
-                sceneView.addGestureRecognizer(panGestureRec)
+            let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
+            sceneView.addGestureRecognizer(panGestureRec)
 
+            let pinchRec = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(pinchRec:)))
+            sceneView.addGestureRecognizer(pinchRec)
+            
             if motionManager.isDeviceMotionActive {
                 motionManager.stopDeviceMotionUpdates()
             }
@@ -278,6 +283,25 @@ import ImageIO
         }
     }
 
+    @objc func handlePinch(pinchRec: UIPinchGestureRecognizer) {
+        if pinchRec.numberOfTouches != 2 {
+            return
+        }
+        
+        let zoom = Double(pinchRec.scale)
+        switch pinchRec.state {
+        case .began:
+            startScale = cameraNode.camera!.yFov
+        case .changed:
+            let fov = startScale / zoom
+            if fov > 20 && fov < 80 {
+                cameraNode.camera!.yFov = fov
+            }
+        default:
+            break
+        }
+    }
+    
     public override func layoutSubviews() {
         super.layoutSubviews()
         if bounds.size.width != prevBounds.size.width || bounds.size.height != prevBounds.size.height {
