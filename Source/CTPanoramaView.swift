@@ -231,7 +231,7 @@ import ImageIO
                 DispatchQueue.main.async {
                     if panoramaView.panoramaType == .cylindrical {
                         // Prevent vertical movement in a cylindrical panorama
-                        panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, Float(-userHeading), 0)
+                        panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, panoramaView.startAngle + Float(-userHeading), 0)
                     } else {
                         // Use quaternions when in spherical mode to prevent gimbal lock
                         panoramaView.cameraNode.orientation = motionData.orientation()
