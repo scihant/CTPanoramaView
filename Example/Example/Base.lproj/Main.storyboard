@@ -88,7 +88,7 @@
                     </view>
                     <connections>
                         <outlet property="compassView" destination="aFO-BR-VR0" id="vWZ-ar-ghU"/>
-                        <outlet property="pv" destination="C0u-qY-bwX" id="V1U-QE-S3T"/>
+                        <outlet property="panoramaView" destination="C0u-qY-bwX" id="V1U-QE-S3T"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

@@ -12,41 +12,39 @@ import CTPanoramaView
 class ViewController: UIViewController {
 
     @IBOutlet weak var compassView: CTPieSliceView!
-    @IBOutlet weak var pv: CTPanoramaView!
-    
+    @IBOutlet weak var panoramaView: CTPanoramaView!
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         loadSphericalImage()
-        pv.compass = compassView
+        panoramaView.compass = compassView
     }
-    
+
     @IBAction func panoramaTypeTapped() {
-        if pv.panoramaType == .spherical {
+        if panoramaView.panoramaType == .spherical {
             loadCylindricalImage()
-        }
-        else {
+        } else {
             loadSphericalImage()
         }
     }
-    
+
     @IBAction func motionTypeTapped() {
-        if pv.controlMethod == .touch {
-            pv.controlMethod = .motion
-        }
-        else {
-            pv.controlMethod = .touch
+        if panoramaView.controlMethod == .touch {
+            panoramaView.controlMethod = .motion
+        } else {
+            panoramaView.controlMethod = .touch
         }
     }
-    
+
     func loadSphericalImage() {
-        pv.image = UIImage(named: "spherical")
+        panoramaView.image = UIImage(named: "spherical")
     }
-    
+
     func loadCylindricalImage() {
-        pv.image = UIImage(named: "cylindrical")
+        panoramaView.image = UIImage(named: "cylindrical")
     }
-    
+
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .all
     }
