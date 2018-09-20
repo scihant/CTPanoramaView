@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		CF415AB51E55C70F002A98ED /* CTPanoramaView.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF415AAB1E55C70F002A98ED /* CTPanoramaView.framework */; };
-		CF415AC71E55C799002A98ED /* CTPanoramaViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF415AC51E55C799002A98ED /* CTPanoramaViewTests.swift */; };
 		CF415ACB1E55C7C0002A98ED /* CTPanoramaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF415AC91E55C7C0002A98ED /* CTPanoramaView.swift */; };
 		CF415ACC1E55C7C0002A98ED /* CTPieSliceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF415ACA1E55C7C0002A98ED /* CTPieSliceView.swift */; };
 		CF415AD41E55E02F002A98ED /* CTPanoramaView.h in Headers */ = {isa = PBXBuildFile; fileRef = CF415AD31E55E02F002A98ED /* CTPanoramaView.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CFED887821536EA200F9488A /* CTPanoramaViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFED887621536EA200F9488A /* CTPanoramaViewTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,12 +27,12 @@
 /* Begin PBXFileReference section */
 		CF415AAB1E55C70F002A98ED /* CTPanoramaView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CTPanoramaView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF415AB41E55C70F002A98ED /* CTPanoramaViewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CTPanoramaViewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CF415AC51E55C799002A98ED /* CTPanoramaViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CTPanoramaViewTests.swift; path = Tests/CTPanoramaViewTests.swift; sourceTree = SOURCE_ROOT; };
-		CF415AC61E55C799002A98ED /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Tests/Info.plist; sourceTree = SOURCE_ROOT; };
 		CF415AC91E55C7C0002A98ED /* CTPanoramaView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CTPanoramaView.swift; path = Source/CTPanoramaView.swift; sourceTree = SOURCE_ROOT; };
 		CF415ACA1E55C7C0002A98ED /* CTPieSliceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CTPieSliceView.swift; path = Source/CTPieSliceView.swift; sourceTree = SOURCE_ROOT; };
-		CF415ACF1E55C807002A98ED /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Source/Info.plist; sourceTree = SOURCE_ROOT; };
-		CF415AD31E55E02F002A98ED /* CTPanoramaView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CTPanoramaView.h; path = Source/CTPanoramaView.h; sourceTree = SOURCE_ROOT; };
+		CF415ACF1E55C807002A98ED /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = "Supporting Files/Info.plist"; sourceTree = SOURCE_ROOT; };
+		CF415AD31E55E02F002A98ED /* CTPanoramaView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CTPanoramaView.h; path = "Supporting Files/CTPanoramaView.h"; sourceTree = SOURCE_ROOT; };
+		CFED887621536EA200F9488A /* CTPanoramaViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CTPanoramaViewTests.swift; sourceTree = "<group>"; };
+		CFED887721536EA200F9488A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,8 +58,8 @@
 			isa = PBXGroup;
 			children = (
 				CF415AD21E55DEE4002A98ED /* Source */,
-				CF415AAD1E55C70F002A98ED /* Supporting Files */,
-				CF415AB81E55C70F002A98ED /* Tests */,
+				CFED887421536E1C00F9488A /* Supporting Files */,
+				CFED887521536EA200F9488A /* Tests */,
 				CF415AAC1E55C70F002A98ED /* Products */,
 			);
 			sourceTree = "<group>";
@@ -73,26 +73,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		CF415AAD1E55C70F002A98ED /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				CF415AD31E55E02F002A98ED /* CTPanoramaView.h */,
-				CF415ACF1E55C807002A98ED /* Info.plist */,
-			);
-			name = "Supporting Files";
-			path = CTPanoramaView;
-			sourceTree = "<group>";
-		};
-		CF415AB81E55C70F002A98ED /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-				CF415AC51E55C799002A98ED /* CTPanoramaViewTests.swift */,
-				CF415AC61E55C799002A98ED /* Info.plist */,
-			);
-			name = Tests;
-			path = CTPanoramaViewTests;
-			sourceTree = "<group>";
-		};
 		CF415AD21E55DEE4002A98ED /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -100,6 +80,24 @@
 				CF415ACA1E55C7C0002A98ED /* CTPieSliceView.swift */,
 			);
 			name = Source;
+			sourceTree = "<group>";
+		};
+		CFED887421536E1C00F9488A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				CF415AD31E55E02F002A98ED /* CTPanoramaView.h */,
+				CF415ACF1E55C807002A98ED /* Info.plist */,
+			);
+			path = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		CFED887521536EA200F9488A /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				CFED887621536EA200F9488A /* CTPanoramaViewTests.swift */,
+				CFED887721536EA200F9488A /* Info.plist */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -124,7 +122,6 @@
 				CF415AA71E55C70F002A98ED /* Frameworks */,
 				CF415AA81E55C70F002A98ED /* Headers */,
 				CF415AA91E55C70F002A98ED /* Resources */,
-				CE460E572095FFB7007AA570 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -166,13 +163,13 @@
 					CF415AAA1E55C70F002A98ED = {
 						CreatedOnToolsVersion = 8.2.1;
 						DevelopmentTeam = 38P3Q4228V;
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
 					CF415AB31E55C70F002A98ED = {
 						CreatedOnToolsVersion = 8.2.1;
 						DevelopmentTeam = FH52365GTQ;
-						LastSwiftMigration = 0820;
+						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -212,22 +209,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		CE460E572095FFB7007AA570 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\nswiftlint\nelse\necho \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		CF415AA61E55C70F002A98ED /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -242,7 +223,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CF415AC71E55C799002A98ED /* CTPanoramaViewTests.swift in Sources */,
+				CFED887821536EA200F9488A /* CTPanoramaViewTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,7 +363,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Source/Info.plist;
+				INFOPLIST_FILE = "Supporting Files/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.scihant.CTPanoramaView;
@@ -390,7 +371,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -404,14 +385,14 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Source/Info.plist;
+				INFOPLIST_FILE = "Supporting Files/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.scihant.CTPanoramaView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -426,7 +407,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.scihant.CTPanoramaViewTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -440,7 +422,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.scihant.CTPanoramaViewTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};

@@ -28,9 +28,9 @@ import ImageIO
 @objc public class CTPanoramaView: UIView {
 
     // MARK: Public properties
-    
+
     @objc public var compass: CTPanoramaCompass?
-    @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> ())?
+    @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> Void)?
     @objc public var panSpeed = CGPoint(x: 0.005, y: 0.005)
     @objc public var startAngle: Float = 0
 
@@ -59,7 +59,7 @@ import ImageIO
             resetCameraAngles()
         }
     }
-    
+
     // MARK: Private properties
 
     private let radius: CGFloat = 10
@@ -88,7 +88,7 @@ import ImageIO
     }()
 
     private var startScale = 0.0
-    
+
     private var xFov: CGFloat {
         return yFov * self.bounds.width / self.bounds.height
     }
@@ -203,7 +203,7 @@ import ImageIO
         if method == .touch {
             let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
             sceneView.addGestureRecognizer(panGestureRec)
-            
+
             let pinchRec = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(pinchRec:)))
             sceneView.addGestureRecognizer(pinchRec)
 
@@ -282,12 +282,12 @@ import ImageIO
             reportMovement(CGFloat(-cameraNode.eulerAngles.y), xFov.toRadians())
         }
     }
-    
+
     @objc func handlePinch(pinchRec: UIPinchGestureRecognizer) {
         if pinchRec.numberOfTouches != 2 {
             return
         }
-        
+
         let zoom = Double(pinchRec.scale)
         switch pinchRec.state {
         case .began:
@@ -311,7 +311,7 @@ import ImageIO
     }
 }
 
-fileprivate extension CMDeviceMotion {
+private extension CMDeviceMotion {
 
     func orientation() -> SCNVector4 {
 
@@ -356,7 +356,7 @@ fileprivate extension CMDeviceMotion {
     }
 }
 
-fileprivate extension UIView {
+private extension UIView {
     func add(view: UIView) {
         view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
@@ -368,7 +368,7 @@ fileprivate extension UIView {
     }
 }
 
-fileprivate extension FloatingPoint {
+private extension FloatingPoint {
     func toDegrees() -> Self {
         return self * 180 / .pi
     }

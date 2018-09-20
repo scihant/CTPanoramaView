@@ -55,7 +55,7 @@ class CTPanoramaViewTests: XCTestCase {
         XCTAssert(overlayView.superview == nil)
     }
 
-    func createImage(size: CGSize, scale: CGFloat = 1, orientation: UIImageOrientation = .up) -> UIImage {
+    func createImage(size: CGSize, scale: CGFloat = 1, orientation: UIImage.Orientation = .up) -> UIImage {
         UIGraphicsBeginImageContextWithOptions(size, true, scale)
         defer {UIGraphicsEndImageContext()}
 
