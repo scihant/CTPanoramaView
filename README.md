@@ -25,7 +25,7 @@ CTPanoramaView can be used both from Objective-C and Swift code.
 
 To install CTPanoramaView using [Carthage](https://github.com/Carthage/Carthage), add the folowing line into your Cartfile:
 
-    github "scihant/CTPanoramaView" ~> 1.0
+    github "scihant/CTPanoramaView" ~> 1.3
 
 Then run the `carthage update` command to build the framework and drag the built `CTPanoramaView.framework` into your XCode project.
 
@@ -33,7 +33,7 @@ Then run the `carthage update` command to build the framework and drag the built
 
 To install CTPanoramaView using [CocoaPods](http://cocoapods.org), add the following line into your Podfile:
 
-    pod "CTPanoramaView", "~> 1.0"
+    pod "CTPanoramaView", "~> 1.3"
 
 Then run the `pod install` command and use the created workspace to open your project from now on.  
 
