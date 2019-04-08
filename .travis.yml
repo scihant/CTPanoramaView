@@ -1,5 +1,5 @@
 language: objective-c
-osx_image: xcode10
+osx_image: xcode10.2
 cache: bundler
 env:
   global:
@@ -7,14 +7,13 @@ env:
   - FRAMEWORK_SCHEME=CTPanoramaView
   - EXAMPLE_PROJECT="Example/Example.xcodeproj"
   - EXAMPLE_SCHEME=Example
-  - SDK=iphonesimulator12.0
+  - SDK=iphonesimulator12.2
   matrix:
-  - DESTINATION="OS=12.0,name=iPhone 8"    RUN_TESTS="YES" BUILD_EXAMPLE="YES" POD_LINT="NO"
+  - DESTINATION="OS=12.2,name=iPhone 8"    RUN_TESTS="YES" BUILD_EXAMPLE="YES" POD_LINT="NO"
   - DESTINATION="OS=11.4,name=iPhone 6s"     RUN_TESTS="YES" BUILD_EXAMPLE="NO" POD_LINT="NO"
-  - DESTINATION="OS=8.4,name=iPhone 5"    RUN_TESTS="YES" BUILD_EXAMPLE="NO" POD_LINT="NO"
 before_install:
-  - gem install cocoapods --pre --no-rdoc --no-ri --no-document --quiet
-  - gem install xcpretty --no-rdoc --no-ri --no-document --quiet
+  - gem install cocoapods --no-document --quiet
+  - gem install xcpretty --no-document --quiet
 script:
   - set -o pipefail
   - xcodebuild -version
