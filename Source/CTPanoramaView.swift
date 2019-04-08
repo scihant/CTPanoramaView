@@ -346,7 +346,7 @@ private extension CMDeviceMotion {
 
             result = quanternionMultiplier.vector(for: .portraitUpsideDown)
 
-        case .unknown, .portrait:
+        default:
             let clockwiseQuanternion = GLKQuaternionMakeWithAngleAndAxis(-(.pi/2), 1, 0, 0)
             let quanternionMultiplier = GLKQuaternionMultiply(clockwiseQuanternion, attitudeQuanternion)
 
@@ -394,7 +394,7 @@ private extension GLKQuaternion {
         case .portraitUpsideDown:
             return SCNVector4(x: -self.x, y: -self.y, z: self.z, w: self.w)
 
-        case .unknown, .portrait:
+        default:
             return SCNVector4(x: self.x, y: self.y, z: self.z, w: self.w)
         }
     }
