@@ -150,7 +150,7 @@ import ImageIO
         yFov = 80
 
         sceneView.scene = scene
-        sceneView.backgroundColor = UIColor.black
+        sceneView.backgroundColor = self.backgroundColor
 
         switchControlMethod(to: controlMethod)
      }
