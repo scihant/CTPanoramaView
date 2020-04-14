@@ -18,6 +18,7 @@ import ImageIO
 @objc public enum CTPanoramaControlMethod: Int {
     case motion
     case touch
+    case both
 }
 
 @objc public enum CTPanoramaType: Int {
@@ -197,6 +198,39 @@ import ImageIO
         add(view: newOverlayView)
     }
 
+    private func startMotionUpdates(){
+
+        guard motionManager.isDeviceMotionAvailable else {return}
+        motionManager.deviceMotionUpdateInterval = 0.015
+
+        motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: opQueue,
+                                               withHandler: { [weak self] (motionData, error) in
+            guard let panoramaView = self else {return}
+            guard (panoramaView.controlMethod == .motion || panoramaView.controlMethod == .both) else {return}
+
+            guard let motionData = motionData else {
+                print("\(String(describing: error?.localizedDescription))")
+                panoramaView.motionManager.stopDeviceMotionUpdates()
+                return
+            }
+
+            let rotationMatrix = motionData.attitude.rotationMatrix
+            var userHeading = .pi - atan2(rotationMatrix.m32, rotationMatrix.m31)
+            userHeading += .pi/2
+
+            DispatchQueue.main.async {
+                if panoramaView.panoramaType == .cylindrical {
+                    // Prevent vertical movement in a cylindrical panorama
+                    panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, panoramaView.startAngle + Float(-userHeading), 0)
+                } else {
+                    // Use quaternions when in spherical mode to prevent gimbal lock
+                    panoramaView.cameraNode.orientation = motionData.orientation()
+                }
+                panoramaView.reportMovement(CGFloat(userHeading), panoramaView.xFov.toRadians())
+            }
+        })
+    }
+
     private func switchControlMethod(to method: CTPanoramaControlMethod) {
         sceneView.gestureRecognizers?.removeAll()
 
@@ -210,35 +244,19 @@ import ImageIO
             if motionManager.isDeviceMotionActive {
                 motionManager.stopDeviceMotionUpdates()
             }
-        } else {
-            guard motionManager.isDeviceMotionAvailable else {return}
-            motionManager.deviceMotionUpdateInterval = 0.015
-            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: opQueue,
-                                                   withHandler: { [weak self] (motionData, error) in
-                guard let panoramaView = self else {return}
-                guard panoramaView.controlMethod == .motion else {return}
 
-                guard let motionData = motionData else {
-                    print("\(String(describing: error?.localizedDescription))")
-                    panoramaView.motionManager.stopDeviceMotionUpdates()
-                    return
-                }
+        }
+        else {
+            if method == .both {
+                let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
+                sceneView.addGestureRecognizer(panGestureRec)
 
-                let rotationMatrix = motionData.attitude.rotationMatrix
-                var userHeading = .pi - atan2(rotationMatrix.m32, rotationMatrix.m31)
-                userHeading += .pi/2
+                let pinchRec = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(pinchRec:)))
+                sceneView.addGestureRecognizer(pinchRec)
+            }
 
-                DispatchQueue.main.async {
-                    if panoramaView.panoramaType == .cylindrical {
-                        // Prevent vertical movement in a cylindrical panorama
-                        panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, panoramaView.startAngle + Float(-userHeading), 0)
-                    } else {
-                        // Use quaternions when in spherical mode to prevent gimbal lock
-                        panoramaView.cameraNode.orientation = motionData.orientation()
-                    }
-                    panoramaView.reportMovement(CGFloat(userHeading), panoramaView.xFov.toRadians())
-                }
-            })
+            startMotionUpdates()
+
         }
     }
 
@@ -259,11 +277,20 @@ import ImageIO
     @objc private func handlePan(panRec: UIPanGestureRecognizer) {
         if panRec.state == .began {
             prevLocation = CGPoint.zero
+
+            // on touch and if control is both
+            // disable motion and only use touch
+            // TODO: Find a way to resume motion updates and also
+            // update the reference frame for motion updates
+            if (motionManager.isDeviceMotionActive && controlMethod == .both) {
+                motionManager.stopDeviceMotionUpdates()
+            }
+
         } else if panRec.state == .changed {
             var modifiedPanSpeed = panSpeed
 
-            if panoramaType == .cylindrical {
-                modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
+            if (panoramaType == .cylindrical) {
+                modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama or both type (matches google VR)
             }
 
             let location = panRec.translation(in: sceneView)
@@ -272,7 +299,7 @@ import ImageIO
                                                 orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x),
                                                 orientation.z)
 
-            if controlMethod == .touch {
+            if (controlMethod == .touch || controlMethod == .both) {
                 newOrientation.x = max(min(newOrientation.x, 1.1), -1.1)
             }
 
