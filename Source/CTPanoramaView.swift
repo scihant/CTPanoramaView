@@ -34,7 +34,7 @@ import ImageIO
     @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> Void)?
 
     // slow down pan rotation
-    @objc public var panSpeed = CGPoint(x: 0.5, y: 0.5)
+    @objc public var panSpeed = CGPoint(x: 0.4, y: 0.4)
     @objc public var startAngle: Float = 0
 
     @objc public var image: UIImage? {
