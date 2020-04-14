@@ -352,7 +352,7 @@ import ImageIO
             startScale = cameraNode.camera!.yFov
         case .changed:
             let fov = startScale / zoom
-            if fov > 20 && fov < 80 {
+            if fov > 20 && fov <= 100 {
                 cameraNode.camera!.yFov = fov
             }
         default:
