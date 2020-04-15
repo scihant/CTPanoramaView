@@ -419,6 +419,11 @@ import ImageIO
     }
 
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+
+        // do not mix pan gestures with the others
+        if(gestureRecognizer is UIPanGestureRecognizer) || (otherGestureRecognizer is UIPanGestureRecognizer){
+            return false;
+        }
         return true
     }
 }
