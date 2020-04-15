@@ -26,7 +26,7 @@ import ImageIO
     case spherical
 }
 
-@objc public class CTPanoramaView: UIView {
+@objc public class CTPanoramaView: UIView, UIGestureRecognizerDelegate {
 
     // MARK: Public properties
 
@@ -72,6 +72,7 @@ import ImageIO
     private let motionManager = CMMotionManager()
     private var geometryNode: SCNNode?
     private var prevLocation = CGPoint.zero
+    private var prevRotation = CGFloat.zero
     private var prevBounds = CGRect.zero
 
     private lazy var cameraNode: SCNNode = {
@@ -247,6 +248,12 @@ import ImageIO
             let pinchRec = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(pinchRec:)))
             sceneView.addGestureRecognizer(pinchRec)
 
+            let rotateRec = UIRotationGestureRecognizer(target: self, action: #selector(handleRotate(rotRec:)))
+            sceneView.addGestureRecognizer(rotateRec)
+
+            pinchRec.delegate = self
+            rotateRec.delegate = self
+
             if motionManager.isDeviceMotionActive {
                 motionManager.stopDeviceMotionUpdates()
             }
@@ -259,6 +266,12 @@ import ImageIO
 
                 let pinchRec = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(pinchRec:)))
                 sceneView.addGestureRecognizer(pinchRec)
+
+                let rotateRec = UIRotationGestureRecognizer(target: self, action: #selector(handleRotate(rotRec:)))
+                sceneView.addGestureRecognizer(rotateRec)
+
+                pinchRec.delegate = self
+                rotateRec.delegate = self
             }
 
             startMotionUpdates()
@@ -360,12 +373,53 @@ import ImageIO
         }
     }
 
+    @objc func handleRotate(rotRec: UIRotationGestureRecognizer) {
+
+        // no rotation for cylindrical
+        if panoramaType == .cylindrical{
+            return
+        }
+
+        if rotRec.state == .began {
+            prevRotation = CGFloat.zero
+
+            if (motionManager.isDeviceMotionActive && controlMethod == .both) {
+                motionManager.stopDeviceMotionUpdates()
+            }
+
+        } else if rotRec.state == .changed {
+
+            let orientation = cameraNode.orientation
+            let rotation = rotRec.rotation
+
+            let zRadians = rotation - prevRotation
+
+            // use a Quaternion instead of eluer angles
+            // so we can switch from sensor to finger rotation
+            // smoothly
+
+            var glQuaternion = GLKQuaternionMake(orientation.x, orientation.y, orientation.z, orientation.w)
+
+            let zMultiplier = GLKQuaternionMakeWithAngleAndAxis(Float(zRadians), 0, 0, 1)
+            glQuaternion = GLKQuaternionMultiply(glQuaternion, zMultiplier)
+
+            cameraNode.orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
+
+            prevRotation = rotation
+
+        }
+    }
+
     public override func layoutSubviews() {
         super.layoutSubviews()
         if bounds.size.width != prevBounds.size.width || bounds.size.height != prevBounds.size.height {
             sceneView.setNeedsDisplay()
             reportMovement(CGFloat(-cameraNode.eulerAngles.y), xFov.toRadians(), callHandler: false)
         }
+    }
+
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
     }
 }
 
