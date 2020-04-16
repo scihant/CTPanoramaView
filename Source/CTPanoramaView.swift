@@ -75,6 +75,12 @@ import ImageIO
     private var prevRotation = CGFloat.zero
     private var prevBounds = CGRect.zero
 
+    // total rotated angles for .both method
+    private var totalX = Float.zero
+    private var totalY = Float.zero
+
+    private var motionPaused = false
+
     private lazy var cameraNode: SCNNode = {
         let node = SCNNode()
         let camera = SCNCamera()
@@ -207,9 +213,12 @@ import ImageIO
         guard motionManager.isDeviceMotionAvailable else {return}
         motionManager.deviceMotionUpdateInterval = 0.015
 
+        motionPaused = false
         motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: opQueue,
                                                withHandler: { [weak self] (motionData, error) in
             guard let panoramaView = self else {return}
+            guard !panoramaView.motionPaused else {return}
+
             guard (panoramaView.controlMethod == .motion || panoramaView.controlMethod == .both) else {return}
 
             guard let motionData = motionData else {
@@ -218,22 +227,53 @@ import ImageIO
                 return
             }
 
-            let rotationMatrix = motionData.attitude.rotationMatrix
-            var userHeading = .pi - atan2(rotationMatrix.m32, rotationMatrix.m31)
-            userHeading += .pi/2
 
             DispatchQueue.main.async {
                 if panoramaView.panoramaType == .cylindrical {
+
+                    let rotationMatrix = motionData.attitude.rotationMatrix
+                    var userHeading = .pi - atan2(rotationMatrix.m32, rotationMatrix.m31)
+                    userHeading += .pi/2
+
+                    var startAngle = panoramaView.startAngle
+
+                    if(panoramaView.controlMethod == .both){
+
+                        startAngle += panoramaView.totalY
+                    }
                     // Prevent vertical movement in a cylindrical panorama
-                    panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, panoramaView.startAngle + Float(-userHeading), 0)
+                    panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, startAngle + Float(-userHeading), 0)
+
                 } else {
                     // Use quaternions when in spherical mode to prevent gimbal lock
                     //panoramaView.cameraNode.orientation = motionData.orientation()
 
-                    panoramaView.cameraNode.orientation = motionData.orientation()
+                    var orientation = motionData.orientation()
+
+                    // Represent the orientation as a GLKQuaternion
+                    if(panoramaView.controlMethod == .both){
+
+                        // same code as pan rotation
+                        // but with our total accumulated
+                        // movements
+
+                        var glQuaternion = GLKQuaternionMake(orientation.x, orientation.y, orientation.z, orientation.w)
+
+                        let xMultiplier = GLKQuaternionMakeWithAngleAndAxis(panoramaView.totalX, 1, 0, 0)
+                        glQuaternion = GLKQuaternionMultiply(glQuaternion, xMultiplier)
+
+                        let yMultiplier = GLKQuaternionMakeWithAngleAndAxis(panoramaView.totalY, 0, 1, 0)
+                        glQuaternion = GLKQuaternionMultiply(yMultiplier, glQuaternion)
+
+                        orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
+
+                    }
+
+                    panoramaView.cameraNode.orientation = orientation
 
                 }
-                panoramaView.reportMovement(CGFloat(userHeading), panoramaView.xFov.toRadians())
+
+                panoramaView.reportMovement(CGFloat(-panoramaView.cameraNode.eulerAngles.y), panoramaView.xFov.toRadians())
             }
         })
     }
@@ -281,6 +321,8 @@ import ImageIO
 
     private func resetCameraAngles() {
         cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
+        totalX = Float.zero
+        totalY = Float.zero
         self.reportMovement(CGFloat(startAngle), xFov.toRadians(), callHandler: false)
     }
 
@@ -298,16 +340,7 @@ import ImageIO
         if panRec.state == .began {
             prevLocation = CGPoint.zero
 
-            // on touch and if control is both
-            // disable motion and only use touch
-            // TODO: Find a way to resume motion updates and also
-            // update the reference frame for motion updates
-            if (motionManager.isDeviceMotionActive && controlMethod == .both) {
-                motionManager.stopDeviceMotionUpdates()
-            }
-
         } else if panRec.state == .changed {
-
 
             var modifiedPanSpeed = panSpeed
 
@@ -323,30 +356,50 @@ import ImageIO
                 y: (location.y - prevLocation.y) * modifiedPanSpeed.y
             )
 
-            // use a Quaternion instead of eluer angles
-            // so we can switch from sensor to finger rotation
-            // smoothly
 
-            // Use the pan translation along the x axis to adjust the camera's rotation about the y axis (side to side navigation).
-            let yScalar = Float(translationDelta.x / self.bounds.size.width)
-            let yRadians = yScalar * MaxPanGestureRotation
+            // accumulate these if we are using .both method
+            // so we can apply the rotations
+            // to the sensor data and smoothly move
+            // with both at the same time
 
-            // Use the pan translation along the y axis to adjust the camera's rotation about the x axis (up and down navigation).
-            let xScalar = Float(translationDelta.y / self.bounds.size.height)
-            let xRadians = xScalar * MaxPanGestureRotation
+            // if both, just accumulate, our sensor callback will handle it
+            if(controlMethod == .both){
+                // Use the pan translation along the x axis to adjust the camera's rotation about the y axis (side to side navigation).
+                let yScalar = Float(translationDelta.x / self.bounds.size.width)
+                let yRadians = yScalar * MaxPanGestureRotation
 
-            // Represent the orientation as a GLKQuaternion
-            var glQuaternion = GLKQuaternionMake(orientation.x, orientation.y, orientation.z, orientation.w)
+                let xScalar = Float(translationDelta.y / self.bounds.size.height)
+                let xRadians = xScalar * MaxPanGestureRotation
 
-            // Perform up and down rotations around *CAMERA* X axis (note the order of multiplication)
-            let xMultiplier = GLKQuaternionMakeWithAngleAndAxis(xRadians, 1, 0, 0)
-            glQuaternion = GLKQuaternionMultiply(glQuaternion, xMultiplier)
+                totalX += xRadians
+                totalY += yRadians
+            }
 
-            // Perform side to side rotations around *WORLD* Y axis (note the order of multiplication, different from above)
-            let yMultiplier = GLKQuaternionMakeWithAngleAndAxis(yRadians, 0, 1, 0)
-            glQuaternion = GLKQuaternionMultiply(yMultiplier, glQuaternion)
+            // otherwise, do the math here since we have no sensor
+            else{
 
-            cameraNode.orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
+                // Use the pan translation along the x axis to adjust the camera's rotation about the y axis (side to side navigation).
+                let yScalar = Float(translationDelta.x / self.bounds.size.width)
+                let yRadians = yScalar * MaxPanGestureRotation
+
+                // Use the pan translation along the y axis to adjust the camera's rotation about the x axis (up and down navigation).
+                let xScalar = Float(translationDelta.y / self.bounds.size.height)
+                let xRadians = xScalar * MaxPanGestureRotation
+
+                // Represent the orientation as a GLKQuaternion
+                var glQuaternion = GLKQuaternionMake(orientation.x, orientation.y, orientation.z, orientation.w)
+
+                // Perform up and down rotations around *CAMERA* X axis (note the order of multiplication)
+                let xMultiplier = GLKQuaternionMakeWithAngleAndAxis(xRadians, 1, 0, 0)
+                glQuaternion = GLKQuaternionMultiply(glQuaternion, xMultiplier)
+
+                // Perform side to side rotations around *WORLD* Y axis (note the order of multiplication, different from above)
+                let yMultiplier = GLKQuaternionMakeWithAngleAndAxis(yRadians, 0, 1, 0)
+                glQuaternion = GLKQuaternionMultiply(yMultiplier, glQuaternion)
+
+                cameraNode.orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
+
+            }
 
             prevLocation = location
 
@@ -383,8 +436,8 @@ import ImageIO
         if rotRec.state == .began {
             prevRotation = CGFloat.zero
 
-            if (motionManager.isDeviceMotionActive && controlMethod == .both) {
-                motionManager.stopDeviceMotionUpdates()
+            if (controlMethod == .both) {
+                motionPaused = true
             }
 
         } else if rotRec.state == .changed {
@@ -407,6 +460,9 @@ import ImageIO
 
             prevRotation = rotation
 
+        }
+        else {
+            motionPaused = false
         }
     }
 
