@@ -87,7 +87,7 @@ import ImageIO
         return tan(self.yFov/2 * .pi / 180.0) * 2 * self.radius
     }()
 
-    private var startScale = 0.0
+    private var startScale: CGFloat = 0.0
 
     private var xFov: CGFloat {
         return yFov * self.bounds.width / self.bounds.height
@@ -288,14 +288,14 @@ import ImageIO
             return
         }
 
-        let zoom = Double(pinchRec.scale)
+        let zoom = CGFloat(pinchRec.scale)
         switch pinchRec.state {
         case .began:
-            startScale = cameraNode.camera!.yFov
+            startScale = cameraNode.camera!.fieldOfView
         case .changed:
             let fov = startScale / zoom
             if fov > 20 && fov < 80 {
-                cameraNode.camera!.yFov = fov
+                cameraNode.camera!.fieldOfView = fov
             }
         default:
             break
@@ -361,8 +361,8 @@ private extension UIView {
         view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
         let views = ["view": view]
-        let hConstraints = NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: [], metrics: nil, views: views)    //swiftlint:disable:this line_length
-        let vConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: [], metrics: nil, views: views)  //swiftlint:disable:this line_length
+        let hConstraints = NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: [], metrics: nil, views: views)
+        let vConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: [], metrics: nil, views: views)
         self.addConstraints(hConstraints)
         self.addConstraints(vConstraints)
     }
