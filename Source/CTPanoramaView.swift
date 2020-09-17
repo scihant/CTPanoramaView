@@ -34,6 +34,9 @@ import ImageIO
     @objc public var panSpeed = CGPoint(x: 0.005, y: 0.005)
     @objc public var startAngle: Float = 0
 
+    @objc public var minFoV: CGFloat = 20
+    @objc public var maxFoV: CGFloat = 80
+    
     @objc public var image: UIImage? {
         didSet {
             panoramaType = panoramaTypeForCurrentImage
@@ -49,7 +52,6 @@ import ImageIO
     @objc public var panoramaType: CTPanoramaType = .cylindrical {
         didSet {
             createGeometryNode()
-            resetCameraAngles()
         }
     }
 
@@ -87,7 +89,7 @@ import ImageIO
         return tan(self.yFov/2 * .pi / 180.0) * 2 * self.radius
     }()
 
-    private var startScale = 0.0
+    private var startScale: CGFloat = 0.0
 
     private var xFov: CGFloat {
         return yFov * self.bounds.width / self.bounds.height
@@ -147,13 +149,20 @@ import ImageIO
         add(view: sceneView)
 
         scene.rootNode.addChildNode(cameraNode)
-        yFov = 80
+        yFov = maxFoV
 
         sceneView.scene = scene
-        sceneView.backgroundColor = UIColor.black
+        sceneView.backgroundColor = self.backgroundColor
 
         switchControlMethod(to: controlMethod)
      }
+    
+    // MARK: Public methods
+    
+    public func resetCameraAngles() {
+        cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
+        self.reportMovement(CGFloat(startAngle), xFov.toRadians(), callHandler: false)
+    }
 
     // MARK: Configuration helper methods
 
@@ -242,11 +251,6 @@ import ImageIO
         }
     }
 
-    private func resetCameraAngles() {
-        cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
-        self.reportMovement(CGFloat(startAngle), xFov.toRadians(), callHandler: false)
-    }
-
     private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat, callHandler: Bool = true) {
         compass?.updateUI(rotationAngle: rotationAngle, fieldOfViewAngle: fieldOfViewAngle)
         if callHandler {
@@ -288,14 +292,14 @@ import ImageIO
             return
         }
 
-        let zoom = Double(pinchRec.scale)
+        let zoom = CGFloat(pinchRec.scale)
         switch pinchRec.state {
         case .began:
-            startScale = cameraNode.camera!.yFov
+            startScale = cameraNode.camera!.fieldOfView
         case .changed:
             let fov = startScale / zoom
-            if fov > 20 && fov < 80 {
-                cameraNode.camera!.yFov = fov
+            if fov > minFoV && fov < maxFoV {
+                cameraNode.camera!.fieldOfView = fov
             }
         default:
             break
@@ -361,8 +365,8 @@ private extension UIView {
         view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
         let views = ["view": view]
-        let hConstraints = NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: [], metrics: nil, views: views)    //swiftlint:disable:this line_length
-        let vConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: [], metrics: nil, views: views)  //swiftlint:disable:this line_length
+        let hConstraints = NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: [], metrics: nil, views: views)
+        let vConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: [], metrics: nil, views: views)
         self.addConstraints(hConstraints)
         self.addConstraints(vConstraints)
     }
