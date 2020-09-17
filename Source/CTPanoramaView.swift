@@ -34,6 +34,9 @@ import ImageIO
     @objc public var panSpeed = CGPoint(x: 0.005, y: 0.005)
     @objc public var startAngle: Float = 0
 
+    @objc public var minFoV: CGFloat = 20
+    @objc public var maxFoV: CGFloat = 80
+    
     @objc public var image: UIImage? {
         didSet {
             panoramaType = panoramaTypeForCurrentImage
@@ -49,7 +52,6 @@ import ImageIO
     @objc public var panoramaType: CTPanoramaType = .cylindrical {
         didSet {
             createGeometryNode()
-            resetCameraAngles()
         }
     }
 
@@ -147,13 +149,20 @@ import ImageIO
         add(view: sceneView)
 
         scene.rootNode.addChildNode(cameraNode)
-        yFov = 80
+        yFov = maxFoV
 
         sceneView.scene = scene
         sceneView.backgroundColor = self.backgroundColor
 
         switchControlMethod(to: controlMethod)
      }
+    
+    // MARK: Public methods
+    
+    public func resetCameraAngles() {
+        cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
+        self.reportMovement(CGFloat(startAngle), xFov.toRadians(), callHandler: false)
+    }
 
     // MARK: Configuration helper methods
 
@@ -242,11 +251,6 @@ import ImageIO
         }
     }
 
-    private func resetCameraAngles() {
-        cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
-        self.reportMovement(CGFloat(startAngle), xFov.toRadians(), callHandler: false)
-    }
-
     private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat, callHandler: Bool = true) {
         compass?.updateUI(rotationAngle: rotationAngle, fieldOfViewAngle: fieldOfViewAngle)
         if callHandler {
@@ -294,7 +298,7 @@ import ImageIO
             startScale = cameraNode.camera!.fieldOfView
         case .changed:
             let fov = startScale / zoom
-            if fov > 20 && fov < 80 {
+            if fov > minFoV && fov < maxFoV {
                 cameraNode.camera!.fieldOfView = fov
             }
         default:
