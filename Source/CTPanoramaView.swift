@@ -33,6 +33,12 @@ import ImageIO
     @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> Void)?
     @objc public var panSpeed = CGPoint(x: 0.005, y: 0.005)
     @objc public var startAngle: Float = 0
+    
+    @objc public var angleOffset: Float = 0 {
+        didSet {
+            geometryNode?.rotation = SCNQuaternion(0, 1, 0, angleOffset)
+        }
+    }
 
     @objc public var minFoV: CGFloat = 20
     @objc public var maxFoV: CGFloat = 80
@@ -197,6 +203,7 @@ import ImageIO
             tubeNode.geometry = tube
             geometryNode = tubeNode
         }
+        geometryNode?.rotation = SCNQuaternion(0, 1, 0, angleOffset)
         scene.rootNode.addChildNode(geometryNode!)
     }
 
