@@ -44,6 +44,7 @@ import ImageIO
     }
 
     @objc public var minFoV: CGFloat = 20
+    @objc public var defaultFoV: CGFloat = 80
     @objc public var maxFoV: CGFloat = 100
 
     @objc public var image: UIImage? {
@@ -68,7 +69,6 @@ import ImageIO
     @objc public var controlMethod: CTPanoramaControlMethod = .touch {
         didSet {
             switchControlMethod(to: controlMethod)
-            resetCameraAngles()
         }
     }
 
@@ -167,7 +167,7 @@ import ImageIO
         add(view: sceneView)
 
         scene.rootNode.addChildNode(cameraNode)
-        yFov = maxFoV
+        yFov = defaultFoV
 
         sceneView.scene = scene
         sceneView.backgroundColor = self.backgroundColor
