@@ -62,13 +62,18 @@ import ImageIO
     @objc public var panoramaType: CTPanoramaType = .cylindrical {
         didSet {
             createGeometryNode()
-            resetCameraAngles()
+            if (controlMethod == .both){
+                resetCameraAngles();
+            }
         }
     }
 
     @objc public var controlMethod: CTPanoramaControlMethod = .touch {
         didSet {
             switchControlMethod(to: controlMethod)
+            if (controlMethod == .both){
+                resetCameraAngles();
+            }
         }
     }
 
