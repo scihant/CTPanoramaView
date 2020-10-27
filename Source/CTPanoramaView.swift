@@ -427,11 +427,22 @@ import ImageIO
         let zoom = CGFloat(pinchRec.scale)
         switch pinchRec.state {
         case .began:
-            startScale = cameraNode.camera!.fieldOfView
+            if #available(iOS 11.0, *) {
+                startScale = cameraNode.camera!.fieldOfView
+            } else {
+                // Fallback on earlier versions
+                startScale = CGFloat(cameraNode.camera!.yFov)
+                
+            }
         case .changed:
             let fov = startScale / zoom
             if fov > minFoV && fov <= maxFoV {
-                cameraNode.camera!.fieldOfView = fov
+                if #available(iOS 11.0, *) {
+                    cameraNode.camera!.fieldOfView = fov
+                } else {
+                    // Fallback on earlier versions
+                    cameraNode.camera!.yFov = Double(fov)
+                }
             }
         default:
             break
