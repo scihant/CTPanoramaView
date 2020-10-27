@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -22,7 +20,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="C0u-qY-bwX" customClass="CTPanoramaView" customModule="CTPanoramaView">
-                                <rect key="frame" x="0.0" y="20" width="375" height="647"/>
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="h2a-9M-T87">
                                         <rect key="frame" x="-14" y="50" width="240" height="128"/>
@@ -32,8 +30,8 @@
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NdB-jE-HZg">
-                                <rect key="frame" x="271" y="30" width="94" height="30"/>
+                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="251" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NdB-jE-HZg">
+                                <rect key="frame" x="271" y="10" width="94" height="30"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <state key="normal" title="Touch/Motion">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -47,8 +45,8 @@
                                     <action selector="motionTypeTapped" destination="BYZ-38-t0r" eventType="touchUpInside" id="K2u-h8-ENc"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zyS-cK-YJl">
-                                <rect key="frame" x="10" y="30" width="149" height="30"/>
+                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zyS-cK-YJl">
+                                <rect key="frame" x="10" y="10" width="148" height="30"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <state key="normal" title="Spherical / Cylindrical">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -78,7 +76,7 @@
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="C0u-qY-bwX" secondAttribute="bottom" id="LnI-TD-CPd"/>
                             <constraint firstItem="NdB-jE-HZg" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="10" id="OrN-Pp-ovw"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="aFO-BR-VR0" secondAttribute="bottom" constant="10" id="bM7-M1-9CN"/>
-                            <constraint firstItem="NdB-jE-HZg" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="zyS-cK-YJl" secondAttribute="trailing" constant="100" id="dVh-rC-bsH"/>
+                            <constraint firstItem="NdB-jE-HZg" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="zyS-cK-YJl" secondAttribute="trailing" constant="10" id="dVh-rC-bsH"/>
                             <constraint firstItem="C0u-qY-bwX" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="gzc-Uw-gNs"/>
                             <constraint firstAttribute="trailing" secondItem="aFO-BR-VR0" secondAttribute="trailing" constant="10" id="ily-cn-fnE"/>
                             <constraint firstItem="C0u-qY-bwX" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="jGp-7q-EyJ"/>
