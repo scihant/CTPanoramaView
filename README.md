@@ -11,7 +11,7 @@ CTPanoramaView is a high-performance library that uses SceneKit to display compl
 
 ## Requirements
 
-* iOS 8.0+ 
+* iOS 8.0+
 * v1.0 requires Xcode 8.0 and Swift 3.0
 * v1.1 requires XCode 9.0 and Swift 4.0
 * v1.2 requires XCode 10.0 and Swift 4.2
@@ -36,7 +36,7 @@ To install CTPanoramaView using [CocoaPods](http://cocoapods.org), add the follo
 
     pod "CTPanoramaView", "~> 1.3"
 
-Then run the `pod install` command and use the created workspace to open your project from now on.  
+Then run the `pod install` command and use the created workspace to open your project from now on.
 
 #### Manual Install
 
@@ -44,7 +44,7 @@ Just add the file `CTPanoramaView.swift` (and `CTPieSliceView.swift` if you want
 
 #### Running the Example project
 
-The example project is located in the Example directory. The framework target is already added as a dependency to it therefore you can run it directly. 
+The example project is located in the Example directory. The framework target is already added as a dependency to it therefore you can run it directly.
 
 ## Usage
 
@@ -67,7 +67,7 @@ panaromaView.image = image
 
 CTPanoramaView supports two types of panoramic images:
 
-* Spherical panoramas (also called 360 photos) 
+* Spherical panoramas (also called 360 photos)
 * Cylindrical panoramas
 
 All panoramas should be full. Partial panoramas (panoramas with a field of view of less than 360º) are not supported. For a spherical panorama, the image should use [equirectangular projection](https://en.wikipedia.org/wiki/Equirectangular_projection). Cubic format is not supported.
@@ -85,6 +85,7 @@ CTPanoramaView allows the user to navigate the panorama two different ways. To c
 ```swift
 panaromaView.controlMethod = .touch  // Touch based control
 panaromaView.controlMethod = .motion // Accelerometer & gyroscope based control
+panaromaView.controlMethod = .both // Accelerometer & gyroscope based control with finger movement support
 ```
 
 The default control method is touch based control. You can change the control method on the fly, while the panorama is being displayed on the screen. The visible section will get automatically reset during a control method change.
@@ -102,7 +103,7 @@ When you set this property to a custom `UIView` subclass conforming to the `CTPa
 
 ```swift
 // compassView is a custom view that conforms to the `CTPanoramaCompass` protocol.
-panaromaView.compass =  compassView 
+panaromaView.compass =  compassView
 ```
 The protocol contains only a single method, which is `updateUI(rotationAngle:fieldOfViewAngle:)`. Here, `rotationAngle` is the amount of rotation around the vertical axis, and `fieldOfViewAngle` is the horizontal FoV angle of the camera. Both values are in radians.
 
