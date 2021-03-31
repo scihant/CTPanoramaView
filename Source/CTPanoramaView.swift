@@ -12,7 +12,8 @@ import CoreMotion
 import ImageIO
 
 @objc public protocol CTPanoramaCompass {
-    func updateUI(rotationAngle: CGFloat, fieldOfViewAngle: CGFloat)
+  func updateUI(rotationAngle: CGFloat, fieldOfViewAngle: CGFloat)
+  func trackOrientation(pitch: CGFloat, yaw: CGFloat)
 }
 
 @objc public enum CTPanoramaControlMethod: Int {
@@ -33,16 +34,7 @@ import ImageIO
     @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> Void)?
     @objc public var panSpeed = CGPoint(x: 0.005, y: 0.005)
     @objc public var startAngle: Float = 0
-    
-    @objc public var angleOffset: Float = 0 {
-        didSet {
-            geometryNode?.rotation = SCNQuaternion(0, 1, 0, angleOffset)
-        }
-    }
 
-    @objc public var minFoV: CGFloat = 20
-    @objc public var maxFoV: CGFloat = 80
-    
     @objc public var image: UIImage? {
         didSet {
             panoramaType = panoramaTypeForCurrentImage
@@ -58,6 +50,7 @@ import ImageIO
     @objc public var panoramaType: CTPanoramaType = .cylindrical {
         didSet {
             createGeometryNode()
+            resetCameraAngles()
         }
     }
 
@@ -95,7 +88,7 @@ import ImageIO
         return tan(self.yFov/2 * .pi / 180.0) * 2 * self.radius
     }()
 
-    private var startScale: CGFloat = 0.0
+    private var startScale = 0.0
 
     private var xFov: CGFloat {
         return yFov * self.bounds.width / self.bounds.height
@@ -155,20 +148,13 @@ import ImageIO
         add(view: sceneView)
 
         scene.rootNode.addChildNode(cameraNode)
-        yFov = maxFoV
+        yFov = 80
 
         sceneView.scene = scene
-        sceneView.backgroundColor = self.backgroundColor
+        sceneView.backgroundColor = UIColor.black
 
         switchControlMethod(to: controlMethod)
      }
-    
-    // MARK: Public methods
-    
-    public func resetCameraAngles() {
-        cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
-        self.reportMovement(CGFloat(startAngle), xFov.toRadians(), callHandler: false)
-    }
 
     // MARK: Configuration helper methods
 
@@ -203,7 +189,6 @@ import ImageIO
             tubeNode.geometry = tube
             geometryNode = tubeNode
         }
-        geometryNode?.rotation = SCNQuaternion(0, 1, 0, angleOffset)
         scene.rootNode.addChildNode(geometryNode!)
     }
 
@@ -253,9 +238,15 @@ import ImageIO
                         panoramaView.cameraNode.orientation = motionData.orientation()
                     }
                     panoramaView.reportMovement(CGFloat(userHeading), panoramaView.xFov.toRadians())
+                  panoramaView.reportOrientation(CGFloat(motionData.attitude.roll), CGFloat(motionData.attitude.yaw))
                 }
             })
         }
+    }
+
+    private func resetCameraAngles() {
+        cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
+        self.reportMovement(CGFloat(startAngle), xFov.toRadians(), callHandler: false)
     }
 
     private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat, callHandler: Bool = true) {
@@ -264,6 +255,12 @@ import ImageIO
             movementHandler?(rotationAngle, fieldOfViewAngle)
         }
     }
+  
+  private func reportOrientation(_ pitch: CGFloat, _ yaw: CGFloat) {
+    let pitch = pitch * (180/CGFloat(Double.pi))
+    let yaw = yaw * (180/CGFloat(Double.pi))
+    compass?.trackOrientation(pitch: pitch, yaw: yaw)
+  }
 
     // MARK: Gesture handling
 
@@ -299,14 +296,14 @@ import ImageIO
             return
         }
 
-        let zoom = CGFloat(pinchRec.scale)
+        let zoom = Double(pinchRec.scale)
         switch pinchRec.state {
         case .began:
-            startScale = cameraNode.camera!.fieldOfView
+            startScale = cameraNode.camera!.yFov
         case .changed:
             let fov = startScale / zoom
-            if fov > minFoV && fov < maxFoV {
-                cameraNode.camera!.fieldOfView = fov
+            if fov > 20 && fov < 80 {
+                cameraNode.camera!.yFov = fov
             }
         default:
             break
@@ -372,8 +369,8 @@ private extension UIView {
         view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
         let views = ["view": view]
-        let hConstraints = NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: [], metrics: nil, views: views)
-        let vConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: [], metrics: nil, views: views)
+        let hConstraints = NSLayoutConstraint.constraints(withVisualFormat: "|[view]|", options: [], metrics: nil, views: views)    //swiftlint:disable:this line_length
+        let vConstraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|", options: [], metrics: nil, views: views)  //swiftlint:disable:this line_length
         self.addConstraints(hConstraints)
         self.addConstraints(vConstraints)
     }

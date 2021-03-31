@@ -80,6 +80,10 @@ import UIKit
 }
 
 extension CTPieSliceView: CTPanoramaCompass {
+  public func trackOrientation(pitch: CGFloat, yaw: CGFloat) {
+    
+  }
+  
     public func updateUI(rotationAngle: CGFloat, fieldOfViewAngle: CGFloat) {
         sliceAngle = fieldOfViewAngle
         transform = CGAffineTransform.identity.rotated(by: rotationAngle)
