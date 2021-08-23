@@ -67,6 +67,14 @@ import ImageIO
             resetCameraAngles()
         }
     }
+    
+    // MARK: Overriding
+    
+    public override var backgroundColor: UIColor? {
+        didSet {
+            sceneView.backgroundColor = backgroundColor
+        }
+    }
 
     // MARK: Private properties
 
