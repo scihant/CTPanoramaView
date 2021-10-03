@@ -18,6 +18,7 @@ import ImageIO
 @objc public enum CTPanoramaControlMethod: Int {
     case motion
     case touch
+    case both
 }
 
 @objc public enum CTPanoramaType: Int {
@@ -25,15 +26,17 @@ import ImageIO
     case spherical
 }
 
-@objc public class CTPanoramaView: UIView {
+@objc public class CTPanoramaView: UIView, UIGestureRecognizerDelegate {
 
     // MARK: Public properties
 
     @objc public var compass: CTPanoramaCompass?
     @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> Void)?
-    @objc public var panSpeed = CGPoint(x: 0.005, y: 0.005)
+
+    // slow down pan rotation
+    @objc public var panSpeed = CGPoint(x: 0.4, y: 0.4)
     @objc public var startAngle: Float = 0
-    
+
     @objc public var angleOffset: Float = 0 {
         didSet {
             geometryNode?.rotation = SCNQuaternion(0, 1, 0, angleOffset)
@@ -41,8 +44,9 @@ import ImageIO
     }
 
     @objc public var minFoV: CGFloat = 20
-    @objc public var maxFoV: CGFloat = 80
-    
+    @objc public var defaultFoV: CGFloat = 80
+    @objc public var maxFoV: CGFloat = 100
+
     @objc public var image: UIImage? {
         didSet {
             panoramaType = panoramaTypeForCurrentImage
@@ -58,13 +62,18 @@ import ImageIO
     @objc public var panoramaType: CTPanoramaType = .cylindrical {
         didSet {
             createGeometryNode()
+            if (controlMethod == .both){
+                resetCameraAngles();
+            }
         }
     }
 
     @objc public var controlMethod: CTPanoramaControlMethod = .touch {
         didSet {
             switchControlMethod(to: controlMethod)
-            resetCameraAngles()
+            if (controlMethod == .both){
+                resetCameraAngles();
+            }
         }
     }
     
@@ -78,13 +87,21 @@ import ImageIO
 
     // MARK: Private properties
 
+    private let MaxPanGestureRotation: Float = GLKMathDegreesToRadians(360)
     private let radius: CGFloat = 10
     private let sceneView = SCNView()
     private let scene = SCNScene()
     private let motionManager = CMMotionManager()
     private var geometryNode: SCNNode?
     private var prevLocation = CGPoint.zero
+    private var prevRotation = CGFloat.zero
     private var prevBounds = CGRect.zero
+
+    // total rotated angles for .both method
+    private var totalX = Float.zero
+    private var totalY = Float.zero
+
+    private var motionPaused = false
 
     private lazy var cameraNode: SCNNode = {
         let node = SCNNode()
@@ -163,18 +180,20 @@ import ImageIO
         add(view: sceneView)
 
         scene.rootNode.addChildNode(cameraNode)
-        yFov = maxFoV
+        yFov = defaultFoV
 
         sceneView.scene = scene
         sceneView.backgroundColor = self.backgroundColor
 
         switchControlMethod(to: controlMethod)
      }
-    
+
     // MARK: Public methods
-    
+
     public func resetCameraAngles() {
         cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
+        totalX = Float.zero
+        totalY = Float.zero
         self.reportMovement(CGFloat(startAngle), xFov.toRadians(), callHandler: false)
     }
 
@@ -221,6 +240,76 @@ import ImageIO
         add(view: newOverlayView)
     }
 
+    private func startMotionUpdates(){
+
+        guard motionManager.isDeviceMotionAvailable else {return}
+        motionManager.deviceMotionUpdateInterval = 0.015
+
+        motionPaused = false
+        motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: opQueue,
+                                               withHandler: { [weak self] (motionData, error) in
+            guard let panoramaView = self else {return}
+            guard !panoramaView.motionPaused else {return}
+
+            guard (panoramaView.controlMethod == .motion || panoramaView.controlMethod == .both) else {return}
+
+            guard let motionData = motionData else {
+                print("\(String(describing: error?.localizedDescription))")
+                panoramaView.motionManager.stopDeviceMotionUpdates()
+                return
+            }
+
+
+            DispatchQueue.main.async {
+                if panoramaView.panoramaType == .cylindrical {
+
+                    let rotationMatrix = motionData.attitude.rotationMatrix
+                    var userHeading = .pi - atan2(rotationMatrix.m32, rotationMatrix.m31)
+                    userHeading += .pi/2
+
+                    var startAngle = panoramaView.startAngle
+
+                    if(panoramaView.controlMethod == .both){
+
+                        startAngle += panoramaView.totalY
+                    }
+                    // Prevent vertical movement in a cylindrical panorama
+                    panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, startAngle + Float(-userHeading), 0)
+
+                } else {
+                    // Use quaternions when in spherical mode to prevent gimbal lock
+                    //panoramaView.cameraNode.orientation = motionData.orientation()
+
+                    var orientation = motionData.orientation()
+
+                    // Represent the orientation as a GLKQuaternion
+                    if(panoramaView.controlMethod == .both){
+
+                        // same code as pan rotation
+                        // but with our total accumulated
+                        // movements
+
+                        var glQuaternion = GLKQuaternionMake(orientation.x, orientation.y, orientation.z, orientation.w)
+
+                        let xMultiplier = GLKQuaternionMakeWithAngleAndAxis(panoramaView.totalX, 1, 0, 0)
+                        glQuaternion = GLKQuaternionMultiply(glQuaternion, xMultiplier)
+
+                        let yMultiplier = GLKQuaternionMakeWithAngleAndAxis(panoramaView.totalY, 0, 1, 0)
+                        glQuaternion = GLKQuaternionMultiply(yMultiplier, glQuaternion)
+
+                        orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
+
+                    }
+
+                    panoramaView.cameraNode.orientation = orientation
+
+                }
+
+                panoramaView.reportMovement(CGFloat(-panoramaView.cameraNode.eulerAngles.y), panoramaView.xFov.toRadians())
+            }
+        })
+    }
+
     private func switchControlMethod(to method: CTPanoramaControlMethod) {
         sceneView.gestureRecognizers?.removeAll()
 
@@ -231,42 +320,39 @@ import ImageIO
             let pinchRec = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(pinchRec:)))
             sceneView.addGestureRecognizer(pinchRec)
 
+            let rotateRec = UIRotationGestureRecognizer(target: self, action: #selector(handleRotate(rotRec:)))
+            sceneView.addGestureRecognizer(rotateRec)
+
+            pinchRec.delegate = self
+            rotateRec.delegate = self
+
             if motionManager.isDeviceMotionActive {
                 motionManager.stopDeviceMotionUpdates()
             }
-        } else {
-            guard motionManager.isDeviceMotionAvailable else {return}
-            motionManager.deviceMotionUpdateInterval = 0.015
-            motionManager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: opQueue,
-                                                   withHandler: { [weak self] (motionData, error) in
-                guard let panoramaView = self else {return}
-                guard panoramaView.controlMethod == .motion else {return}
 
-                guard let motionData = motionData else {
-                    print("\(String(describing: error?.localizedDescription))")
-                    panoramaView.motionManager.stopDeviceMotionUpdates()
-                    return
-                }
+        }
+        else {
+            if method == .both {
+                let panGestureRec = UIPanGestureRecognizer(target: self, action: #selector(handlePan(panRec:)))
+                sceneView.addGestureRecognizer(panGestureRec)
 
-                let rotationMatrix = motionData.attitude.rotationMatrix
-                var userHeading = .pi - atan2(rotationMatrix.m32, rotationMatrix.m31)
-                userHeading += .pi/2
+                let pinchRec = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(pinchRec:)))
+                sceneView.addGestureRecognizer(pinchRec)
 
-                DispatchQueue.main.async {
-                    if panoramaView.panoramaType == .cylindrical {
-                        // Prevent vertical movement in a cylindrical panorama
-                        panoramaView.cameraNode.eulerAngles = SCNVector3Make(0, panoramaView.startAngle + Float(-userHeading), 0)
-                    } else {
-                        // Use quaternions when in spherical mode to prevent gimbal lock
-                        panoramaView.cameraNode.orientation = motionData.orientation()
-                    }
-                    panoramaView.reportMovement(CGFloat(userHeading), panoramaView.xFov.toRadians())
-                }
-            })
+                let rotateRec = UIRotationGestureRecognizer(target: self, action: #selector(handleRotate(rotRec:)))
+                sceneView.addGestureRecognizer(rotateRec)
+
+                pinchRec.delegate = self
+                rotateRec.delegate = self
+            }
+
+            startMotionUpdates()
+
         }
     }
 
     private func reportMovement(_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat, callHandler: Bool = true) {
+
         compass?.updateUI(rotationAngle: rotationAngle, fieldOfViewAngle: fieldOfViewAngle)
         if callHandler {
             movementHandler?(rotationAngle, fieldOfViewAngle)
@@ -278,24 +364,68 @@ import ImageIO
     @objc private func handlePan(panRec: UIPanGestureRecognizer) {
         if panRec.state == .began {
             prevLocation = CGPoint.zero
+
         } else if panRec.state == .changed {
+
             var modifiedPanSpeed = panSpeed
 
-            if panoramaType == .cylindrical {
-                modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
+            if (panoramaType == .cylindrical) {
+                modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama or both type (matches google VR)
             }
 
+            let orientation = cameraNode.orientation
             let location = panRec.translation(in: sceneView)
-            let orientation = cameraNode.eulerAngles
-            var newOrientation = SCNVector3Make(orientation.x + Float(location.y - prevLocation.y) * Float(modifiedPanSpeed.y),
-                                                orientation.y + Float(location.x - prevLocation.x) * Float(modifiedPanSpeed.x),
-                                                orientation.z)
 
-            if controlMethod == .touch {
-                newOrientation.x = max(min(newOrientation.x, 1.1), -1.1)
+            let translationDelta = CGPoint(
+                x: (location.x - prevLocation.x) * modifiedPanSpeed.x,
+                y: (location.y - prevLocation.y) * modifiedPanSpeed.y
+            )
+
+
+            // accumulate these if we are using .both method
+            // so we can apply the rotations
+            // to the sensor data and smoothly move
+            // with both at the same time
+
+            // if both, just accumulate, our sensor callback will handle it
+            if(controlMethod == .both){
+                // Use the pan translation along the x axis to adjust the camera's rotation about the y axis (side to side navigation).
+                let yScalar = Float(translationDelta.x / self.bounds.size.width)
+                let yRadians = yScalar * MaxPanGestureRotation
+
+                let xScalar = Float(translationDelta.y / self.bounds.size.height)
+                let xRadians = xScalar * MaxPanGestureRotation
+
+                totalX += xRadians
+                totalY += yRadians
             }
 
-            cameraNode.eulerAngles = newOrientation
+            // otherwise, do the math here since we have no sensor
+            else{
+
+                // Use the pan translation along the x axis to adjust the camera's rotation about the y axis (side to side navigation).
+                let yScalar = Float(translationDelta.x / self.bounds.size.width)
+                let yRadians = yScalar * MaxPanGestureRotation
+
+                // Use the pan translation along the y axis to adjust the camera's rotation about the x axis (up and down navigation).
+                let xScalar = Float(translationDelta.y / self.bounds.size.height)
+                let xRadians = xScalar * MaxPanGestureRotation
+
+                // Represent the orientation as a GLKQuaternion
+                var glQuaternion = GLKQuaternionMake(orientation.x, orientation.y, orientation.z, orientation.w)
+
+                // Perform up and down rotations around *CAMERA* X axis (note the order of multiplication)
+                let xMultiplier = GLKQuaternionMakeWithAngleAndAxis(xRadians, 1, 0, 0)
+                glQuaternion = GLKQuaternionMultiply(glQuaternion, xMultiplier)
+
+                // Perform side to side rotations around *WORLD* Y axis (note the order of multiplication, different from above)
+                let yMultiplier = GLKQuaternionMakeWithAngleAndAxis(yRadians, 0, 1, 0)
+                glQuaternion = GLKQuaternionMultiply(yMultiplier, glQuaternion)
+
+                cameraNode.orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
+
+            }
+
             prevLocation = location
 
             reportMovement(CGFloat(-cameraNode.eulerAngles.y), xFov.toRadians())
@@ -310,14 +440,65 @@ import ImageIO
         let zoom = CGFloat(pinchRec.scale)
         switch pinchRec.state {
         case .began:
-            startScale = cameraNode.camera!.fieldOfView
+            if #available(iOS 11.0, *) {
+                startScale = cameraNode.camera!.fieldOfView
+            } else {
+                // Fallback on earlier versions
+                startScale = CGFloat(cameraNode.camera!.yFov)
+                
+            }
         case .changed:
             let fov = startScale / zoom
-            if fov > minFoV && fov < maxFoV {
-                cameraNode.camera!.fieldOfView = fov
+            if fov > minFoV && fov <= maxFoV {
+                if #available(iOS 11.0, *) {
+                    cameraNode.camera!.fieldOfView = fov
+                } else {
+                    // Fallback on earlier versions
+                    cameraNode.camera!.yFov = Double(fov)
+                }
             }
         default:
             break
+        }
+    }
+
+    @objc func handleRotate(rotRec: UIRotationGestureRecognizer) {
+
+        // no rotation for cylindrical
+        if panoramaType == .cylindrical{
+            return
+        }
+
+        if rotRec.state == .began {
+            prevRotation = CGFloat.zero
+
+            if (controlMethod == .both) {
+                motionPaused = true
+            }
+
+        } else if rotRec.state == .changed {
+
+            let orientation = cameraNode.orientation
+            let rotation = rotRec.rotation
+
+            let zRadians = rotation - prevRotation
+
+            // use a Quaternion instead of eluer angles
+            // so we can switch from sensor to finger rotation
+            // smoothly
+
+            var glQuaternion = GLKQuaternionMake(orientation.x, orientation.y, orientation.z, orientation.w)
+
+            let zMultiplier = GLKQuaternionMakeWithAngleAndAxis(Float(zRadians), 0, 0, 1)
+            glQuaternion = GLKQuaternionMultiply(glQuaternion, zMultiplier)
+
+            cameraNode.orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
+
+            prevRotation = rotation
+
+        }
+        else {
+            motionPaused = false
         }
     }
 
@@ -327,6 +508,15 @@ import ImageIO
             sceneView.setNeedsDisplay()
             reportMovement(CGFloat(-cameraNode.eulerAngles.y), xFov.toRadians(), callHandler: false)
         }
+    }
+
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+
+        // do not mix pan gestures with the others
+        if(gestureRecognizer is UIPanGestureRecognizer) || (otherGestureRecognizer is UIPanGestureRecognizer){
+            return false;
+        }
+        return true
     }
 }
 
