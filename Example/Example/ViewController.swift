@@ -32,6 +32,8 @@ class ViewController: UIViewController {
     @IBAction func motionTypeTapped() {
         if panoramaView.controlMethod == .touch {
             panoramaView.controlMethod = .motion
+        } else if panoramaView.controlMethod == .motion {
+            panoramaView.controlMethod = .both
         } else {
             panoramaView.controlMethod = .touch
         }

@@ -11,12 +11,8 @@ CTPanoramaView is a high-performance library that uses SceneKit to display compl
 
 ## Requirements
 
-* iOS 8.0+
-* v1.0 requires Xcode 8.0 and Swift 3.0
-* v1.1 requires XCode 9.0 and Swift 4.0
-* v1.2 requires XCode 10.0 and Swift 4.2
-* v1.3 requires XCode 10.0 and Swift 5.0
-* v1.4 requires XCode 12.0 and Swift 5.0
+* iOS 10.0+
+* Swift 5.0
 
 CTPanoramaView can be used both from Objective-C and Swift code.
 
@@ -26,7 +22,7 @@ CTPanoramaView can be used both from Objective-C and Swift code.
 
 To install CTPanoramaView using [Carthage](https://github.com/Carthage/Carthage), add the folowing line into your Cartfile:
 
-    github "scihant/CTPanoramaView" ~> 1.3
+    github "scihant/CTPanoramaView" ~> 1.5
 
 Then run the `carthage update` command to build the framework and drag the built `CTPanoramaView.framework` into your XCode project.
 
@@ -34,7 +30,7 @@ Then run the `carthage update` command to build the framework and drag the built
 
 To install CTPanoramaView using [CocoaPods](http://cocoapods.org), add the following line into your Podfile:
 
-    pod "CTPanoramaView", "~> 1.3"
+    pod "CTPanoramaView", "~> 1.5"
 
 Then run the `pod install` command and use the created workspace to open your project from now on.
 

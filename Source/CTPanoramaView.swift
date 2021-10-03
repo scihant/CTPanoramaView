@@ -33,7 +33,6 @@ import ImageIO
     @objc public var compass: CTPanoramaCompass?
     @objc public var movementHandler: ((_ rotationAngle: CGFloat, _ fieldOfViewAngle: CGFloat) -> Void)?
 
-    // slow down pan rotation
     @objc public var panSpeed = CGPoint(x: 0.4, y: 0.4)
     @objc public var startAngle: Float = 0
 
@@ -43,8 +42,7 @@ import ImageIO
         }
     }
 
-    @objc public var minFoV: CGFloat = 20
-    @objc public var defaultFoV: CGFloat = 80
+    @objc public var minFoV: CGFloat = 40
     @objc public var maxFoV: CGFloat = 100
 
     @objc public var image: UIImage? {
@@ -62,18 +60,14 @@ import ImageIO
     @objc public var panoramaType: CTPanoramaType = .cylindrical {
         didSet {
             createGeometryNode()
-            if (controlMethod == .both){
-                resetCameraAngles();
-            }
+            resetCameraAngles();
         }
     }
 
     @objc public var controlMethod: CTPanoramaControlMethod = .touch {
         didSet {
             switchControlMethod(to: controlMethod)
-            if (controlMethod == .both){
-                resetCameraAngles();
-            }
+            resetCameraAngles();
         }
     }
     
@@ -97,7 +91,7 @@ import ImageIO
     private var prevRotation = CGFloat.zero
     private var prevBounds = CGRect.zero
 
-    // total rotated angles for .both method
+    // Parameters used by the .both method
     private var totalX = Float.zero
     private var totalY = Float.zero
 
@@ -180,7 +174,6 @@ import ImageIO
         add(view: sceneView)
 
         scene.rootNode.addChildNode(cameraNode)
-        yFov = defaultFoV
 
         sceneView.scene = scene
         sceneView.backgroundColor = self.backgroundColor
@@ -191,6 +184,7 @@ import ImageIO
     // MARK: Public methods
 
     public func resetCameraAngles() {
+        yFov = maxFoV
         cameraNode.eulerAngles = SCNVector3Make(0, startAngle, 0)
         totalX = Float.zero
         totalY = Float.zero
@@ -269,8 +263,7 @@ import ImageIO
 
                     var startAngle = panoramaView.startAngle
 
-                    if(panoramaView.controlMethod == .both){
-
+                    if (panoramaView.controlMethod == .both) {
                         startAngle += panoramaView.totalY
                     }
                     // Prevent vertical movement in a cylindrical panorama
@@ -278,8 +271,7 @@ import ImageIO
 
                 } else {
                     // Use quaternions when in spherical mode to prevent gimbal lock
-                    //panoramaView.cameraNode.orientation = motionData.orientation()
-
+     
                     var orientation = motionData.orientation()
 
                     // Represent the orientation as a GLKQuaternion
@@ -370,7 +362,7 @@ import ImageIO
             var modifiedPanSpeed = panSpeed
 
             if (panoramaType == .cylindrical) {
-                modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama or both type (matches google VR)
+                modifiedPanSpeed.y = 0 // Prevent vertical movement in a cylindrical panorama
             }
 
             let orientation = cameraNode.orientation
@@ -381,14 +373,12 @@ import ImageIO
                 y: (location.y - prevLocation.y) * modifiedPanSpeed.y
             )
 
+            // Accumulate these if wheb using .both method so that we can apply the rotations
+            // to the sensor data and smoothly move with both touch and motion controls at the same time
 
-            // accumulate these if we are using .both method
-            // so we can apply the rotations
-            // to the sensor data and smoothly move
-            // with both at the same time
-
-            // if both, just accumulate, our sensor callback will handle it
-            if(controlMethod == .both){
+            // If both, just accumulate, our sensor callback will handle it
+            if (controlMethod == .both) {
+                
                 // Use the pan translation along the x axis to adjust the camera's rotation about the y axis (side to side navigation).
                 let yScalar = Float(translationDelta.x / self.bounds.size.width)
                 let yRadians = yScalar * MaxPanGestureRotation
@@ -398,11 +388,8 @@ import ImageIO
 
                 totalX += xRadians
                 totalY += yRadians
-            }
-
-            // otherwise, do the math here since we have no sensor
-            else{
-
+            } else { // Otherwise, do the math here since we have no sensor
+                
                 // Use the pan translation along the x axis to adjust the camera's rotation about the y axis (side to side navigation).
                 let yScalar = Float(translationDelta.x / self.bounds.size.width)
                 let yRadians = yScalar * MaxPanGestureRotation
@@ -427,7 +414,6 @@ import ImageIO
             }
 
             prevLocation = location
-
             reportMovement(CGFloat(-cameraNode.eulerAngles.y), xFov.toRadians())
         }
     }
